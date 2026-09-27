@@ -334,13 +334,15 @@ function getStars(rating) {
 
 const feedbackViewport = document.getElementById("publishedFeedback");
 const feedbackTrack = document.getElementById("feedbackTrack");
-const feedbackSortButtons = document.querySelectorAll(".feedback-sort-button");
+const feedbackSortButtons = document.querySelectorAll("[data-sort]");
+const feedbackRatingSelect = document.getElementById("feedbackRatingFilter");
 const feedbackPrevious = document.getElementById("feedbackPrevious");
 const feedbackNext = document.getElementById("feedbackNext");
 const feedbackCounter = document.getElementById("feedbackCounter");
 let approvedFeedback = [];
 let feedbackIndex = 0;
 let feedbackSortOrder = "latest";
+let feedbackRatingFilter = "all";
 
 function getVisibleFeedbackCount() {
   if (!feedbackViewport || !feedbackTrack || !feedbackTrack.firstElementChild) {
@@ -407,7 +409,14 @@ function renderFeedback() {
     return;
   }
 
-  const sortedFeedback = [...approvedFeedback].sort(function (first, second) {
+  const visibleFeedback = approvedFeedback.filter(function (item) {
+    return (
+      feedbackRatingFilter === "all" ||
+      Number(item.rating) === Number(feedbackRatingFilter)
+    );
+  });
+
+  const sortedFeedback = visibleFeedback.sort(function (first, second) {
     const firstDate = Date.parse(first.created_at) || 0;
     const secondDate = Date.parse(second.created_at) || 0;
 
@@ -416,17 +425,23 @@ function renderFeedback() {
       : secondDate - firstDate;
   });
 
-  feedbackTrack.innerHTML = sortedFeedback
-    .map(function (item) {
-      return `
+  feedbackTrack.innerHTML = sortedFeedback.length
+    ? sortedFeedback
+        .map(function (item) {
+          return `
         <article class="testimonial">
           <div class="rating">${getStars(item.rating)}</div>
           <p>“${escapeHTML(item.feedback)}”</p>
           <strong>— ${escapeHTML(item.name)}</strong>
         </article>
       `;
-    })
-    .join("");
+        })
+        .join("")
+    : `<div class="empty-feedback">${
+        approvedFeedback.length
+          ? `No feedback with a ${feedbackRatingFilter}-star rating yet.`
+          : "No client feedback has been published yet."
+      }</div>`;
 
   feedbackIndex = 0;
   updateFeedbackCarousel();
@@ -446,6 +461,13 @@ feedbackSortButtons.forEach(function (button) {
     renderFeedback();
   });
 });
+
+if (feedbackRatingSelect) {
+  feedbackRatingSelect.addEventListener("change", function () {
+    feedbackRatingFilter = feedbackRatingSelect.value;
+    renderFeedback();
+  });
+}
 
 if (feedbackPrevious) {
   feedbackPrevious.addEventListener("click", function () {
@@ -496,18 +518,7 @@ async function loadFeedback() {
     return;
   }
 
-  if (!result.data || result.data.length === 0) {
-    feedbackTrack.innerHTML =
-      '<div class="empty-feedback">' +
-      "No client feedback has been published yet." +
-      "</div>";
-
-    updateFeedbackCarousel();
-
-    return;
-  }
-
-  approvedFeedback = result.data;
+  approvedFeedback = result.data || [];
   renderFeedback();
 }
 

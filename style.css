@@ -924,13 +924,27 @@ select {
 
   justify-content: flex-end;
 
-  gap: 12px;
+  flex-wrap: wrap;
+
+  gap: 16px 24px;
 
   margin-top: 40px;
 }
 
 
-.feedback-controls > span {
+.feedback-control-group {
+  display: flex;
+
+  align-items: center;
+
+  flex-wrap: wrap;
+
+  gap: 12px;
+}
+
+
+.feedback-control-group > span,
+.feedback-control-group > label {
   font-size: 14px;
 
   opacity: .7;
@@ -952,6 +966,23 @@ select {
   background: #151515;
 
   color: #bbb;
+
+  font: inherit;
+
+  cursor: pointer;
+}
+
+
+.feedback-rating-select {
+  min-width: 180px;
+
+  padding: 9px 12px;
+
+  border: 1px solid #444;
+
+  background: #151515;
+
+  color: #b89250;
 
   font: inherit;
 
