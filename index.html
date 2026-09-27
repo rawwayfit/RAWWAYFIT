@@ -1053,16 +1053,64 @@
 
     <!-- PUBLISHED FEEDBACK -->
 
-    <div
-      class="feedback-grid"
-      id="publishedFeedback"
-    >
+    <div class="feedback-controls">
+      <span>Sort feedback:</span>
 
-      <div class="empty-feedback">
-        Loading client feedback...
+      <div class="feedback-sort-buttons" role="group" aria-label="Sort feedback">
+        <button
+          type="button"
+          class="feedback-sort-button active"
+          data-sort="latest"
+          aria-pressed="true"
+        >
+          Latest
+        </button>
+        <button
+          type="button"
+          class="feedback-sort-button"
+          data-sort="oldest"
+          aria-pressed="false"
+        >
+          Oldest
+        </button>
+      </div>
+    </div>
+
+    <div
+      class="feedback-carousel"
+      role="region"
+      aria-label="Client feedback carousel"
+    >
+      <button
+        type="button"
+        class="carousel-button"
+        id="feedbackPrevious"
+        aria-label="Previous client feedback"
+        disabled
+      >
+        &#10094;
+      </button>
+
+      <div class="feedback-viewport" id="publishedFeedback">
+        <div class="feedback-track" id="feedbackTrack" aria-live="polite">
+          <div class="empty-feedback">
+            Loading client feedback...
+          </div>
+        </div>
       </div>
 
+      <button
+        type="button"
+        class="carousel-button"
+        id="feedbackNext"
+        aria-label="Next client feedback"
+        disabled
+      >
+        &#10095;
+      </button>
     </div>
+
+    <div class="carousel-counter" id="feedbackCounter" aria-live="polite"></div>
 
 
     <!-- FEEDBACK FORM -->

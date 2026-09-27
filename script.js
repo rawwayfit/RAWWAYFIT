@@ -332,15 +332,145 @@ function getStars(rating) {
    LOAD APPROVED FEEDBACK
 ===================================================== */
 
-async function loadFeedback() {
-  const container = document.getElementById("publishedFeedback");
+const feedbackViewport = document.getElementById("publishedFeedback");
+const feedbackTrack = document.getElementById("feedbackTrack");
+const feedbackSortButtons = document.querySelectorAll(".feedback-sort-button");
+const feedbackPrevious = document.getElementById("feedbackPrevious");
+const feedbackNext = document.getElementById("feedbackNext");
+const feedbackCounter = document.getElementById("feedbackCounter");
+let approvedFeedback = [];
+let feedbackIndex = 0;
+let feedbackSortOrder = "latest";
 
-  if (!container) {
+function getVisibleFeedbackCount() {
+  if (!feedbackViewport || !feedbackTrack || !feedbackTrack.firstElementChild) {
+    return 1;
+  }
+
+  const card = feedbackTrack.firstElementChild;
+  const gap = Number.parseFloat(window.getComputedStyle(feedbackTrack).gap) || 0;
+  const cardWidth = card.getBoundingClientRect().width;
+
+  if (!cardWidth) {
+    return 1;
+  }
+
+  return Math.max(
+    1,
+    Math.floor((feedbackViewport.clientWidth + gap) / (cardWidth + gap)),
+  );
+}
+
+function updateFeedbackCarousel() {
+  if (!feedbackTrack || !feedbackViewport) {
+    return;
+  }
+
+  const cards = feedbackTrack.querySelectorAll(".testimonial");
+  const visibleCount = getVisibleFeedbackCount();
+  const maximumIndex = Math.max(0, cards.length - visibleCount);
+
+  feedbackIndex = Math.min(feedbackIndex, maximumIndex);
+
+  if (cards.length > 0) {
+    const firstCard = cards[0];
+    const gap =
+      Number.parseFloat(window.getComputedStyle(feedbackTrack).gap) || 0;
+    const step = firstCard.getBoundingClientRect().width + gap;
+
+    feedbackTrack.style.transform = `translateX(-${feedbackIndex * step}px)`;
+  } else {
+    feedbackTrack.style.transform = "";
+  }
+
+  if (feedbackPrevious) {
+    feedbackPrevious.disabled = feedbackIndex === 0;
+  }
+
+  if (feedbackNext) {
+    feedbackNext.disabled = feedbackIndex >= maximumIndex;
+  }
+
+  if (feedbackCounter) {
+    const firstVisible = cards.length === 0 ? 0 : feedbackIndex + 1;
+    const lastVisible = Math.min(feedbackIndex + visibleCount, cards.length);
+
+    feedbackCounter.textContent =
+      cards.length === 0
+        ? ""
+        : `${firstVisible}-${lastVisible} / ${cards.length}`;
+  }
+}
+
+function renderFeedback() {
+  if (!feedbackTrack) {
+    return;
+  }
+
+  const sortedFeedback = [...approvedFeedback].sort(function (first, second) {
+    const firstDate = Date.parse(first.created_at) || 0;
+    const secondDate = Date.parse(second.created_at) || 0;
+
+    return feedbackSortOrder === "oldest"
+      ? firstDate - secondDate
+      : secondDate - firstDate;
+  });
+
+  feedbackTrack.innerHTML = sortedFeedback
+    .map(function (item) {
+      return `
+        <article class="testimonial">
+          <div class="rating">${getStars(item.rating)}</div>
+          <p>“${escapeHTML(item.feedback)}”</p>
+          <strong>— ${escapeHTML(item.name)}</strong>
+        </article>
+      `;
+    })
+    .join("");
+
+  feedbackIndex = 0;
+  updateFeedbackCarousel();
+}
+
+feedbackSortButtons.forEach(function (button) {
+  button.addEventListener("click", function () {
+    feedbackSortOrder = button.dataset.sort;
+
+    feedbackSortButtons.forEach(function (sortButton) {
+      const isActive = sortButton === button;
+
+      sortButton.classList.toggle("active", isActive);
+      sortButton.setAttribute("aria-pressed", String(isActive));
+    });
+
+    renderFeedback();
+  });
+});
+
+if (feedbackPrevious) {
+  feedbackPrevious.addEventListener("click", function () {
+    feedbackIndex = Math.max(0, feedbackIndex - 1);
+    updateFeedbackCarousel();
+  });
+}
+
+if (feedbackNext) {
+  feedbackNext.addEventListener("click", function () {
+    feedbackIndex += 1;
+    updateFeedbackCarousel();
+  });
+}
+
+window.addEventListener("resize", updateFeedbackCarousel);
+
+async function loadFeedback() {
+  if (!feedbackViewport || !feedbackTrack) {
     return;
   }
 
   if (!supabaseClient) {
-    container.innerHTML = "";
+    feedbackViewport.closest(".feedback-carousel").hidden = true;
+    document.querySelector(".feedback-controls").hidden = true;
 
     return;
   }
@@ -356,52 +486,29 @@ async function loadFeedback() {
   if (result.error) {
     console.error(result.error);
 
-    container.innerHTML =
+    feedbackTrack.innerHTML =
       '<div class="empty-feedback">' +
       "Client feedback is temporarily unavailable." +
       "</div>";
+
+    updateFeedbackCarousel();
 
     return;
   }
 
   if (!result.data || result.data.length === 0) {
-    container.innerHTML =
+    feedbackTrack.innerHTML =
       '<div class="empty-feedback">' +
       "No client feedback has been published yet." +
       "</div>";
 
+    updateFeedbackCarousel();
+
     return;
   }
 
-  container.innerHTML = result.data
-    .map(function (item) {
-      return `
-
-            <article class="testimonial">
-
-              <div class="rating">
-
-                ${getStars(item.rating)}
-
-              </div>
-
-              <p>
-
-                “${escapeHTML(item.feedback)}”
-
-              </p>
-
-              <strong>
-
-                — ${escapeHTML(item.name)}
-
-              </strong>
-
-            </article>
-
-          `;
-    })
-    .join("");
+  approvedFeedback = result.data;
+  renderFeedback();
 }
 
 /* =====================================================
