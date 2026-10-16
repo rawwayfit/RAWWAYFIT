@@ -45,6 +45,7 @@ The files are standalone and do not replace `index.html`, `style.css`, or `scrip
 - `Invalid API key`: check the URL and publishable/anon key in `rawwayfit-config.js`.
 - `new row violates row-level security`: confirm the SQL ran successfully and declaration is checked.
 - Dashboard says access denied: create the user in Supabase Auth and add that exact user UUID to `trainer_users`.
+- Assessment deletion reports that no row was deleted: run the latest `supabase-schema.sql` in Supabase SQL Editor and confirm your trainer UUID is in `trainer_users`.
 - GitHub Pages 404: confirm files are in the same published directory as `index.html`, and wait for deployment to finish.
 
 

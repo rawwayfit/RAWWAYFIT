@@ -47,6 +47,7 @@
   </section>
 
   <section id="dashboardPanel" class="rw-hidden">
+    <p id="listMessage" class="rw-message" role="status" aria-live="polite"></p>
     <div class="rw-stat-grid" role="group" aria-label="Filter clients by training status">
       <button class="rw-stat-card rw-stat-total" type="button" data-status-filter="all" aria-pressed="true">
         <span>Total client records</span><strong id="totalClientCount">—</strong>
@@ -70,7 +71,6 @@
         <span id="clientPageStatus" class="rw-small" aria-live="polite"></span>
         <button id="nextClients" class="rw-btn secondary" type="button" aria-controls="clientRows">Next</button>
       </div>
-      <p id="listMessage" class="rw-message" role="status" aria-live="polite"></p>
     </div>
     <div id="detailPanel" class="rw-card rw-detail-panel rw-hidden" role="dialog" aria-modal="false" aria-labelledby="detailTitle">
       <div class="rw-detail-header">

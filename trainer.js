@@ -230,6 +230,24 @@
         min-width: 0;
       }
 
+      .rw-client-meta {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .rw-client-meta-item {
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        gap: 3px;
+      }
+
+      .rw-client-meta-label {
+        color: #64748b;
+        font-size: 11px;
+        font-weight: 700;
+      }
+
       .rw-client-code {
         color: #475569;
         font-size: 12px;
@@ -346,19 +364,12 @@
         }
 
         .rw-client-meta {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 12px;
         }
 
         .rw-client-meta-item {
-          flex: 1 1 0;
-          flex-direction: column;
-          gap: 3px;
-        }
-
-        .rw-client-meta-label {
-          color: #64748b;
-          font-size: 11px;
-          font-weight: 700;
+          min-width: 0;
         }
 
         .rw-detail-panel:not(.rw-hidden) {
@@ -1093,14 +1104,19 @@
     msg(notesMessage, "", "");
 
     try {
-      const { error } = await supabaseClient
+      const { data: deletedAssessment, error } = await supabaseClient
         .from("client_assessments")
         .delete()
         .eq("id", selected.id)
         .select("id")
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
+      if (!deletedAssessment) {
+        throw new Error(
+          "Supabase did not delete a row. Check that the latest supabase-schema.sql delete policy is applied and your trainer account is approved."
+        );
+      }
 
       allAssessments = allAssessments.filter(a => a.id !== selected.id);
       selected = null;
@@ -1110,11 +1126,15 @@
       lastClientTrigger = null;
       renderRows();
       msg(listMessage, `${clientCode} was permanently deleted.`, "success");
+      listMessage.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
       console.error(error);
+      const errorDetail = error && typeof error.message === "string"
+        ? ` ${error.message}`
+        : "";
       msg(
         notesMessage,
-        "Could not delete this assessment. Confirm the delete policy has been applied and try again.",
+        `Could not delete this assessment.${errorDetail}`,
         "error"
       );
     } finally {
