@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Pre-Trial Fitness Assessment Form | RAW WAY FIT</title>
+  <link rel="stylesheet" href="rawwayfit-theme.css">
+  <link rel="stylesheet" href="rawwayfit-app.css">
+</head>
+<body>
+<main class="rw-shell">
+  <header class="rw-top">
+    <a class="rw-brand" href="index.html" aria-label="RAW WAY FIT home">
+      <img src="https://raw.githubusercontent.com/rawwayfit/RWF-Photos/refs/heads/main/logo/main_logo.png" alt="" width="200" height="60">
+      <span class="rw-brand-name">RAWWAYFIT</span>
+    </a>
+    <a class="rw-navlink" href="index.html">← Back to website</a>
+  </header>
+  <section class="rw-hero">
+    <div class="rw-kicker">Personalized Training: Face-to-Face or Screen-to-Screen</div>
+    <h1>Pre-Trial Fitness Assessment Form</h1>
+    <p class="rw-subtitle">Please complete this form accurately. Your answers help your trainer prepare a safer, personalised fitness and nutrition plan. Fields marked * are required.</p>
+  </section>
+
+  <section class="rw-card rw-submission-result rw-hidden" id="submissionResult" aria-live="polite">
+    <h2 id="resultHeading">Submission status</h2>
+    <p class="rw-message" id="formMessage" role="status"></p>
+    <p class="rw-result-number rw-hidden" id="clientNumberResult">Your client number: <strong id="clientNumberValue"></strong></p>
+    <p class="rw-result-email rw-hidden" id="emailStatusResult"></p>
+  </section>
+
+  <form id="assessmentForm">
+    <section class="rw-card">
+      <div class="rw-section-head"><span class="rw-number">01</span><h2>Personal Details</h2></div>
+      <div class="rw-grid">
+        <div class="rw-field"><label for="client_name">Full name <span class="required-star" aria-hidden="true">*</span></label><input id="client_name" name="client_name" required maxlength="120" autocomplete="name"></div>
+        <div class="rw-field"><label for="age_dob">Age / Date of birth</label><input id="age_dob" name="age_dob" maxlength="80"></div>
+        <div class="rw-field"><label for="gender">Gender</label><select id="gender" name="gender"><option value="">Select</option><option>Female</option><option>Male</option><option>Non-binary</option><option>Prefer not to say</option><option>Self-describe</option></select></div>
+        <div class="rw-field"><label for="phone">Phone / WhatsApp number <span class="required-star" aria-hidden="true">*</span></label><input id="phone" name="phone" required maxlength="40" autocomplete="tel" inputmode="tel"></div>
+        <div class="rw-field"><label for="client_email">Email address <span class="required-star" aria-hidden="true">*</span></label><input id="client_email" name="client_email" type="email" required maxlength="254" autocomplete="email"><p class="rw-help">We’ll email your client number and submission confirmation to this address.</p></div>
+        <div class="rw-field"><label for="city_country">City / Country</label><input id="city_country" name="city_country" maxlength="120"></div>
+        <div class="rw-field full"><label for="occupation">Occupation</label><input id="occupation" name="occupation" maxlength="160"></div>
+      </div>
+    </section>
+
+    <section class="rw-card">
+      <div class="rw-section-head"><span class="rw-number">02</span><h2>Body Measurements</h2></div>
+      <div class="rw-grid">
+        <div class="rw-field"><label for="height_cm">Height (cm)</label><input id="height_cm" name="height_cm" type="number" min="30" max="280" step="0.1"></div>
+        <div class="rw-field"><label for="current_weight_kg">Current weight (kg)</label><input id="current_weight_kg" name="current_weight_kg" type="number" min="1" max="500" step="0.1"></div>
+        <div class="rw-field"><label for="target_weight_kg">Target weight (kg)</label><input id="target_weight_kg" name="target_weight_kg" type="number" min="1" max="500" step="0.1"></div>
+        <div class="rw-field"><label for="waist_cm">Waist measurement (cm)</label><input id="waist_cm" name="waist_cm" type="number" min="1" max="300" step="0.1"></div>
+        <div class="rw-field"><label for="hip_cm">Hip measurement (optional, cm)</label><input id="hip_cm" name="hip_cm" type="number" min="1" max="300" step="0.1"></div>
+        <div class="rw-field"><label for="body_fat_percent">Body fat % (if known)</label><input id="body_fat_percent" name="body_fat_percent" type="number" min="1" max="80" step="0.1"></div>
+        <div class="rw-field full"><span class="rw-label">Progress photos available</span><div class="rw-options">
+          <label><input type="checkbox" name="photos_available" value="Front"> Front</label>
+          <label><input type="checkbox" name="photos_available" value="Side"> Side</label>
+          <label><input type="checkbox" name="photos_available" value="Back"> Back</label>
+          <label><input type="checkbox" name="photos_available" value="Not yet"> Not yet</label>
+        </div><p class="rw-help">This records availability only; do not upload photos through this form.</p></div>
+      </div>
+    </section>
+
+    <section class="rw-card">
+      <div class="rw-section-head"><span class="rw-number">03</span><h2>Fitness Goals</h2></div>
+      <div class="rw-grid">
+        <div class="rw-field full"><span class="rw-label">Main goal</span><div class="rw-options">
+          <label><input type="checkbox" name="main_goal" value="Fat Loss"> Fat loss</label><label><input type="checkbox" name="main_goal" value="Muscle Gain"> Muscle gain</label><label><input type="checkbox" name="main_goal" value="Body Recomposition"> Body recomposition</label><label><input type="checkbox" name="main_goal" value="Strength"> Strength</label><label><input type="checkbox" name="main_goal" value="Endurance"> Endurance</label><label><input type="checkbox" name="main_goal" value="General Fitness"> General fitness</label>
+        </div></div>
+        <div class="rw-field full"><label for="goal_why">Why is this goal important to you?</label><textarea id="goal_why" name="goal_why" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="target_date">Target date / deadline</label><input id="target_date" name="target_date" type="date"></div>
+        <div class="rw-field"><label for="fitness_experience">Previous fitness experience</label><select id="fitness_experience" name="fitness_experience"><option value="">Select</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select></div>
+        <div class="rw-field"><label for="training_location">Preferred training location</label><select id="training_location" name="training_location"><option value="">Select</option><option>Home</option><option>Gym</option><option>Outdoor</option><option>Mixed</option></select></div>
+        <div class="rw-field"><label for="training_days">Available training days</label><input id="training_days" name="training_days" placeholder="e.g. Mon, Wed, Fri" maxlength="120"></div>
+        <div class="rw-field full"><label for="preferred_training_time">Preferred training time</label><input id="preferred_training_time" name="preferred_training_time" maxlength="120" placeholder="e.g. weekday mornings"></div>
+      </div>
+    </section>
+
+    <section class="rw-card">
+      <div class="rw-section-head"><span class="rw-number">04</span><h2>Medical & Health History</h2></div>
+      <div class="rw-grid">
+        <div class="rw-field"><label for="medical_condition">Any medical condition or diagnosis?</label><select id="medical_condition" name="medical_condition"><option value="">Select</option><option>No</option><option>Yes</option></select></div>
+        <div class="rw-field rw-conditional rw-hidden" data-show-when="medical_condition" data-show-value="Yes"><label for="medical_details">If yes, details</label><textarea id="medical_details" name="medical_details" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="medication">Current medication?</label><select id="medication" name="medication"><option value="">Select</option><option>No</option><option>Yes</option></select></div>
+        <div class="rw-field rw-conditional rw-hidden" data-show-when="medication" data-show-value="Yes"><label for="medication_details">If yes, details</label><textarea id="medication_details" name="medication_details" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="injury_surgery">Previous surgery or injury?</label><select id="injury_surgery" name="injury_surgery"><option value="">Select</option><option>No</option><option>Yes</option></select></div>
+        <div class="rw-field rw-conditional rw-hidden" data-show-when="injury_surgery" data-show-value="Yes"><label for="injury_details">If yes, details</label><textarea id="injury_details" name="injury_details" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="exercise_pain">Pain or discomfort during exercise?</label><select id="exercise_pain" name="exercise_pain"><option value="">Select</option><option>No</option><option>Yes</option></select></div>
+        <div class="rw-field rw-conditional rw-hidden" data-show-when="exercise_pain" data-show-value="Yes"><label for="exercise_pain_details">If yes, area / details</label><textarea id="exercise_pain_details" name="exercise_pain_details" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="warning_symptoms">Chest pain, dizziness, or unusual breathlessness?</label><select id="warning_symptoms" name="warning_symptoms"><option value="">Select</option><option>No</option><option>Yes</option></select></div>
+        <div class="rw-field rw-conditional rw-hidden" data-show-when="warning_symptoms" data-show-value="Yes"><label for="warning_symptoms_details">If yes, details</label><textarea id="warning_symptoms_details" name="warning_symptoms_details" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="doctor_restrictions">Doctor's exercise restrictions?</label><select id="doctor_restrictions" name="doctor_restrictions"><option value="">Select</option><option>No</option><option>Yes</option></select></div>
+        <div class="rw-field rw-conditional rw-hidden" data-show-when="doctor_restrictions" data-show-value="Yes"><label for="doctor_restrictions_details">If yes, details</label><textarea id="doctor_restrictions_details" name="doctor_restrictions_details" maxlength="2000"></textarea></div>
+        <div class="rw-field full"><label for="emergency_contact">Emergency contact name & number</label><input id="emergency_contact" name="emergency_contact" maxlength="180"></div>
+      </div>
+      <p class="rw-alert">Important: If you have a medical condition, injury, symptoms, or exercise restrictions, consult a qualified healthcare professional before starting exercise. If you currently have chest pain or severe/unusual breathlessness, seek urgent medical advice rather than exercising.</p>
+    </section>
+
+    <section class="rw-card">
+      <div class="rw-section-head"><span class="rw-number">05</span><h2>Lifestyle & Daily Activity</h2></div>
+      <div class="rw-grid">
+        <div class="rw-field"><label for="daily_steps">Average daily steps</label><input id="daily_steps" name="daily_steps" type="number" min="0" max="100000"></div>
+        <div class="rw-field"><label for="work_type">Work type</label><select id="work_type" name="work_type"><option value="">Select</option><option>Sitting</option><option>Standing</option><option>Physically active</option><option>Mixed</option></select></div>
+        <div class="rw-field"><label for="sleep_hours">Average sleep (hours/night)</label><input id="sleep_hours" name="sleep_hours" type="number" min="0" max="24" step="0.5"></div>
+        <div class="rw-field"><label for="sleep_quality">Sleep quality</label><select id="sleep_quality" name="sleep_quality"><option value="">Select</option><option>Poor</option><option>Average</option><option>Good</option><option>Excellent</option></select></div>
+        <div class="rw-field"><label for="stress_level">Daily stress level</label><select id="stress_level" name="stress_level"><option value="">Select</option><option>Low</option><option>Moderate</option><option>High</option></select></div>
+        <div class="rw-field"><label for="water_litres">Water intake (litres/day)</label><input id="water_litres" name="water_litres" type="number" min="0" max="20" step="0.1"></div>
+        <div class="rw-field"><span class="rw-label">Do you smoke?</span><div class="rw-options" role="radiogroup" aria-label="Do you smoke?"><label><input type="radio" name="smoking" value="Yes"> Yes</label><label><input type="radio" name="smoking" value="No"> No</label></div></div>
+        <div class="rw-field"><span class="rw-label">Do you drink alcohol?</span><div class="rw-options" role="radiogroup" aria-label="Do you drink alcohol?"><label><input type="radio" name="drinking" value="Yes"> Yes</label><label><input type="radio" name="drinking" value="No"> No</label></div></div>
+      </div>
+    </section>
+
+    <section class="rw-card">
+      <div class="rw-section-head"><span class="rw-number">06</span><h2>Nutrition Assessment</h2></div>
+      <div class="rw-grid">
+        <div class="rw-field"><label for="diet_preference">Diet preference</label><select id="diet_preference" name="diet_preference"><option value="">Select</option><option>Vegetarian</option><option>Eggetarian</option><option>Non-vegetarian</option><option>Vegan</option></select></div>
+        <div class="rw-field"><label for="food_allergies">Food allergies / intolerances</label><textarea id="food_allergies" name="food_allergies" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="foods_avoided">Foods you avoid or dislike</label><textarea id="foods_avoided" name="foods_avoided" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="typical_breakfast">Typical breakfast</label><textarea id="typical_breakfast" name="typical_breakfast" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="typical_lunch">Typical lunch</label><textarea id="typical_lunch" name="typical_lunch" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="typical_dinner">Typical dinner</label><textarea id="typical_dinner" name="typical_dinner" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="snacks_beverages">Snacks / beverages</label><textarea id="snacks_beverages" name="snacks_beverages" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="supplements">Supplements currently used</label><textarea id="supplements" name="supplements" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="meal_timing">Meal timing / work schedule</label><textarea id="meal_timing" name="meal_timing" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="digestive_issues">Any digestive issues?</label><textarea id="digestive_issues" name="digestive_issues" maxlength="2000"></textarea></div>
+      </div>
+    </section>
+
+    <section class="rw-card">
+      <div class="rw-section-head"><span class="rw-number">07</span><h2>Training Readiness & Preferences</h2></div>
+      <div class="rw-grid">
+        <div class="rw-field"><label for="enjoyed_exercises">Exercises you enjoy</label><textarea id="enjoyed_exercises" name="enjoyed_exercises" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="disliked_exercises">Exercises you dislike / cannot do</label><textarea id="disliked_exercises" name="disliked_exercises" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="available_equipment">Available equipment</label><textarea id="available_equipment" name="available_equipment" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="weekly_routine">Current weekly exercise routine</label><textarea id="weekly_routine" name="weekly_routine" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="fitness_limitations">Fitness limitations</label><textarea id="fitness_limitations" name="fitness_limitations" maxlength="2000"></textarea></div>
+        <div class="rw-field full"><span class="rw-label">Preferred coaching support</span><div class="rw-options">
+          <label><input type="checkbox" name="coaching_support" value="Workout plan"> Workout plan</label><label><input type="checkbox" name="coaching_support" value="Diet guidance"> Diet guidance</label><label><input type="checkbox" name="coaching_support" value="Daily check-in"> Daily check-in</label><label><input type="checkbox" name="coaching_support" value="Video call"> Video call</label><label><input type="checkbox" name="coaching_support" value="Progress tracking"> Progress tracking</label>
+        </div></div>
+      </div>
+    </section>
+
+    <section class="rw-card">
+      <div class="rw-section-head"><span class="rw-number">08</span><h2>Commitment & Expectations</h2></div>
+      <div class="rw-grid">
+        <div class="rw-field"><label for="commit_days">How many days per week can you commit?</label><input id="commit_days" name="commit_days" type="number" min="0" max="7"></div>
+        <div class="rw-field"><label for="session_minutes">How much time per session? (minutes)</label><input id="session_minutes" name="session_minutes" type="number" min="1" max="600"></div>
+        <div class="rw-field"><label for="trainer_expectations">What support do you expect from your trainer?</label><textarea id="trainer_expectations" name="trainer_expectations" maxlength="2000"></textarea></div>
+        <div class="rw-field"><label for="consistency_barriers">What may stop you from being consistent?</label><textarea id="consistency_barriers" name="consistency_barriers" maxlength="2000"></textarea></div>
+        <div class="rw-field full"><label for="anything_else">Anything else your trainer should know?</label><textarea id="anything_else" name="anything_else" maxlength="3000"></textarea></div>
+      </div>
+    </section>
+
+    <section class="rw-card">
+      <div class="rw-section-head"><span class="rw-number">09</span><h2>Client Declaration</h2></div>
+      <p class="rw-subtitle">I confirm that the information provided is accurate to the best of my knowledge. I understand that training and nutrition guidance will be based on the information I provide, and I will inform my trainer about changes in my health, injury status, medication, or circumstances.</p>
+      <div class="rw-grid" style="margin-top:18px">
+        <div class="rw-field"><label for="confirmation_date">Date of submission</label><input id="confirmation_date" name="confirmation_date" type="date" readonly aria-readonly="true"></div>
+        <div class="rw-field full"><label class="rw-options"><input id="declaration" name="declaration" type="checkbox" required> I confirm that the information above is accurate and I agree to submit it to RAW WAY FIT for assessment and coaching. <span class="required-star" aria-hidden="true">*</span></label></div>
+      </div>
+      <p class="rw-help">Your assessment contains private personal and health information. Submit it only if you are comfortable sharing it with your trainer. Please contact RAW WAY FIT if you need to correct your submission.</p>
+    </section>
+
+    <div class="rw-card">
+      <div class="rw-actions"><button class="rw-btn" id="submitButton" type="submit">Submit assessment securely</button><button class="rw-btn secondary" type="reset">Clear form</button></div>
+    </div>
+  </form>
+  <footer class="rw-footer">RAW WAY FIT · Personalized Training: Face-to-Face or Screen-to-Screen.· rawwayfit@gmail.com</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="rawwayfit-config.js"></script>
+<script src="assessment.js"></script>
+</body>
+</html>

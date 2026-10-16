@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Trainer Dashboard | RAW WAY FIT</title>
+  <link rel="stylesheet" href="rawwayfit-theme.css">
+  <link rel="stylesheet" href="rawwayfit-app.css">
+</head>
+<body>
+<main class="rw-shell">
+  <header class="rw-top">
+    <a class="rw-brand" href="index.html" aria-label="RAW WAY FIT home">
+      <img src="https://raw.githubusercontent.com/rawwayfit/RWF-Photos/refs/heads/main/logo/main_logo.png" alt="" width="200" height="60">
+      <span class="rw-brand-name">RAWWAYFIT</span>
+    </a>
+    <div class="rw-top-actions">
+      <a class="rw-navlink" href="index.html">← Back to website</a>
+      <button id="signOutButton" class="rw-btn danger rw-hidden" type="button">Sign out</button>
+    </div>
+  </header>
+  <section class="rw-hero">
+    <div class="rw-kicker">Private trainer area</div>
+    <h1>Client Assessment Dashboard</h1>
+    <p class="rw-subtitle">Sign in with your approved trainer account to view client assessments and add coaching notes. Do not share this login.</p>
+  </section>
+
+  <section id="loginPanel" class="rw-card">
+    <h2>Trainer sign in</h2>
+    <form id="loginForm" class="rw-grid">
+      <div class="rw-field full"><label for="email">Trainer email</label><input id="email" type="email" autocomplete="username" required></div>
+      <div class="rw-field full"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+      <div class="rw-field full"><button class="rw-btn" id="loginButton" type="submit">Sign in</button><p id="loginMessage" class="rw-message" role="status" aria-live="polite"></p></div>
+    </form>
+  </section>
+
+  <section id="dashboardPanel" class="rw-hidden">
+    <div class="rw-stat-grid" role="group" aria-label="Filter clients by training status">
+      <button class="rw-stat-card rw-stat-total" type="button" data-status-filter="all" aria-pressed="true">
+        <span>Total client records</span><strong id="totalClientCount">—</strong>
+      </button>
+      <button class="rw-stat-card rw-stat-active" type="button" data-status-filter="Active" aria-pressed="false">
+        <span>Active training members</span><strong id="activeClientCount">—</strong>
+      </button>
+      <button class="rw-stat-card rw-stat-on-hold" type="button" data-status-filter="On hold" aria-pressed="false">
+        <span>On hold</span><strong id="onHoldClientCount">—</strong>
+      </button>
+      <button class="rw-stat-card rw-stat-completed" type="button" data-status-filter="Completed" aria-pressed="false">
+        <span>Completed</span><strong id="completedClientCount">—</strong>
+      </button>
+    </div>
+    <div class="rw-card">
+      <div class="rw-field"><label for="searchClients">Search by client number, name, email or phone</label><input id="searchClients" type="search" placeholder="e.g. RWF-000012 or client name…"></div>
+      <p class="rw-help" id="clientCount" aria-live="polite">Loading client records…</p>
+      <div id="clientRows" class="rw-client-grid" aria-live="polite"><p class="rw-small">Loading clients…</p></div>
+      <div id="clientPagination" class="rw-client-pagination rw-hidden" aria-label="Client list pages">
+        <button id="previousClients" class="rw-btn secondary" type="button" aria-controls="clientRows">Previous</button>
+        <span id="clientPageStatus" class="rw-small" aria-live="polite"></span>
+        <button id="nextClients" class="rw-btn secondary" type="button" aria-controls="clientRows">Next</button>
+      </div>
+      <p id="listMessage" class="rw-message" role="status" aria-live="polite"></p>
+    </div>
+    <div id="detailPanel" class="rw-card rw-detail-panel rw-hidden" role="dialog" aria-modal="false" aria-labelledby="detailTitle">
+      <div class="rw-detail-header">
+        <div><div class="rw-kicker">Selected assessment</div><h2 id="detailTitle">Client details</h2></div>
+        <div class="rw-actions rw-detail-header-actions"><button class="rw-btn danger" id="deleteAssessmentButton" type="button">Delete assessment</button><button class="rw-btn secondary" id="closeDetail" type="button">Close details</button></div>
+      </div>
+      <div id="detailScrollArea" class="rw-detail-scroll">
+        <div id="assessmentDetails"></div>
+        <hr style="border:0;border-top:1px solid #dce4f2;margin:22px 0">
+        <h2>Training status &amp; trainer notes</h2>
+        <form id="trainerNotesForm" class="rw-grid">
+          <input type="hidden" id="selectedAssessmentId">
+          <div class="rw-field"><label for="trainingStatus">Training status</label><select id="trainingStatus"><option value="Lead">Lead / not started</option><option value="Active">Active training member</option><option value="On hold">On hold</option><option value="Completed">Completed</option></select></div>
+          <div class="rw-field full"><label for="trainerSummary">Assessment summary</label><textarea id="trainerSummary" maxlength="10000"></textarea></div>
+          <div class="rw-field full"><label for="initialPlan">Initial plan / recommendations</label><textarea id="initialPlan" maxlength="10000"></textarea></div>
+          <div class="rw-field"><label for="nextReviewDate">Next review date</label><input id="nextReviewDate" type="date"></div>
+          <div class="rw-field full"><button class="rw-btn" id="saveNotesButton" type="submit">Save trainer notes</button><p id="notesMessage" class="rw-message" role="status" aria-live="polite"></p></div>
+        </form>
+      </div>
+    </div>
+  </section>
+  <footer class="rw-footer">Private RAW WAY FIT trainer dashboard. Access is controlled by Supabase authentication and database policies.</footer>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="rawwayfit-config.js"></script>
+<script src="trainer.js"></script>
+</body>
+</html>

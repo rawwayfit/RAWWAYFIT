@@ -11,7 +11,7 @@
   >
 
   <title>
-    RAWWAYFIT | Feedback Admin
+    Feedback Admin | RAWWAYFIT 
   </title>
 
   <style>
@@ -685,11 +685,12 @@
     }
 
   </style>
+  <link rel="stylesheet" href="rawwayfit-theme.css">
 
 </head>
 
 
-<body>
+<body class="rw-admin-theme">
 
 
 <!-- =====================================================
@@ -799,13 +800,16 @@
     <div class="container header-inner">
 
       <div class="logo">
-
-        RAWWAYFIT
-
-        <span>
-          FEEDBACK ADMIN
-        </span>
-
+        <img
+          src="https://raw.githubusercontent.com/rawwayfit/RWF-Photos/refs/heads/main/logo/main_logo.png"
+          alt=""
+          width="200"
+          height="60"
+        >
+        <div class="logo-copy">
+          <span class="logo-name">RAWWAYFIT</span>
+          <span>FEEDBACK ADMIN</span>
+        </div>
       </div>
 
 
@@ -862,7 +866,7 @@
       <div class="stats">
 
 
-        <div class="stat-card">
+        <a class="stat-card stat-pending" href="#pendingFeedbackSection" aria-label="View pending feedback">
 
           <span>
             PENDING
@@ -872,10 +876,10 @@
             0
           </strong>
 
-        </div>
+        </a>
 
 
-        <div class="stat-card">
+        <a class="stat-card stat-approved" href="#approvedFeedbackSection" aria-label="View approved feedback">
 
           <span>
             APPROVED
@@ -885,10 +889,10 @@
             0
           </strong>
 
-        </div>
+        </a>
 
 
-        <div class="stat-card">
+        <a class="stat-card stat-rejected" href="#rejectedFeedbackSection" aria-label="View rejected feedback">
 
           <span>
             REJECTED
@@ -898,7 +902,7 @@
             0
           </strong>
 
-        </div>
+        </a>
 
 
       </div>
@@ -909,11 +913,11 @@
            PENDING
       ================================================= -->
 
-      <section class="feedback-section">
+      <section class="feedback-section" id="pendingFeedbackSection" aria-labelledby="pendingFeedbackHeading">
 
         <div class="section-heading">
 
-          <h2>
+          <h2 id="pendingFeedbackHeading">
             Pending Feedback
           </h2>
 
@@ -935,6 +939,12 @@
 
         </div>
 
+        <nav class="feedback-pagination" id="pendingPagination" aria-label="Pending feedback pages" hidden>
+          <button type="button" data-feedback-page="pending" data-page-direction="-1" aria-label="Previous pending reviews">Previous</button>
+          <span class="pagination-status" id="pendingPageStatus" aria-live="polite"></span>
+          <button type="button" data-feedback-page="pending" data-page-direction="1" aria-label="Next pending reviews">Next</button>
+        </nav>
+
       </section>
 
 
@@ -943,11 +953,11 @@
            APPROVED
       ================================================= -->
 
-      <section class="feedback-section">
+      <section class="feedback-section" id="approvedFeedbackSection" aria-labelledby="approvedFeedbackHeading">
 
         <div class="section-heading">
 
-          <h2>
+          <h2 id="approvedFeedbackHeading">
             Approved Feedback
           </h2>
 
@@ -969,6 +979,12 @@
 
         </div>
 
+        <nav class="feedback-pagination" id="approvedPagination" aria-label="Approved feedback pages" hidden>
+          <button type="button" data-feedback-page="approved" data-page-direction="-1" aria-label="Previous approved reviews">Previous</button>
+          <span class="pagination-status" id="approvedPageStatus" aria-live="polite"></span>
+          <button type="button" data-feedback-page="approved" data-page-direction="1" aria-label="Next approved reviews">Next</button>
+        </nav>
+
       </section>
 
 
@@ -977,11 +993,11 @@
            REJECTED
       ================================================= -->
 
-      <section class="feedback-section">
+      <section class="feedback-section" id="rejectedFeedbackSection" aria-labelledby="rejectedFeedbackHeading">
 
         <div class="section-heading">
 
-          <h2>
+          <h2 id="rejectedFeedbackHeading">
             Rejected Feedback
           </h2>
 
@@ -1002,6 +1018,12 @@
           </div>
 
         </div>
+
+        <nav class="feedback-pagination" id="rejectedPagination" aria-label="Rejected feedback pages" hidden>
+          <button type="button" data-feedback-page="rejected" data-page-direction="-1" aria-label="Previous rejected reviews">Previous</button>
+          <span class="pagination-status" id="rejectedPageStatus" aria-live="polite"></span>
+          <button type="button" data-feedback-page="rejected" data-page-direction="1" aria-label="Next rejected reviews">Next</button>
+        </nav>
 
       </section>
 
@@ -1102,6 +1124,33 @@ const approvedList =
 
 const rejectedList =
   document.getElementById("rejectedList");
+
+const feedbackPageSize = 3;
+const feedbackPages = {
+  pending: 0,
+  approved: 0,
+  rejected: 0
+};
+const feedbackByStatus = {
+  pending: [],
+  approved: [],
+  rejected: []
+};
+
+const feedbackPagination = {
+  pending: {
+    nav: document.getElementById("pendingPagination"),
+    status: document.getElementById("pendingPageStatus")
+  },
+  approved: {
+    nav: document.getElementById("approvedPagination"),
+    status: document.getElementById("approvedPageStatus")
+  },
+  rejected: {
+    nav: document.getElementById("rejectedPagination"),
+    status: document.getElementById("rejectedPageStatus")
+  }
+};
 
 
 const pendingCount =
@@ -1312,6 +1361,10 @@ async function checkAdmin(userId) {
 
 async function loadFeedback() {
 
+  Object.values(feedbackPagination).forEach(
+    pagination => pagination.nav.hidden = true
+  );
+
   pendingList.innerHTML =
     '<div class="empty-state">Loading...</div>';
 
@@ -1385,6 +1438,10 @@ async function loadFeedback() {
         item.status === "rejected"
     );
 
+  feedbackByStatus.pending = pending;
+  feedbackByStatus.approved = approved;
+  feedbackByStatus.rejected = rejected;
+
 
   /* COUNTS */
 
@@ -1415,21 +1472,24 @@ async function loadFeedback() {
   renderFeedback(
     pending,
     pendingList,
-    "pending"
+    "pending",
+    feedbackPagination.pending
   );
 
 
   renderFeedback(
     approved,
     approvedList,
-    "approved"
+    "approved",
+    feedbackPagination.approved
   );
 
 
   renderFeedback(
     rejected,
     rejectedList,
-    "rejected"
+    "rejected",
+    feedbackPagination.rejected
   );
 
 }
@@ -1443,7 +1503,8 @@ async function loadFeedback() {
 function renderFeedback(
   items,
   container,
-  status
+  status,
+  pagination
 ) {
 
   if (!items.length) {
@@ -1458,13 +1519,28 @@ function renderFeedback(
     container.innerHTML =
       `<div class="empty-state">${message}</div>`;
 
+    pagination.nav.hidden = true;
     return;
 
   }
 
+  const pageCount = Math.ceil(items.length / feedbackPageSize);
+  feedbackPages[status] = Math.min(feedbackPages[status], pageCount - 1);
+  const startIndex = feedbackPages[status] * feedbackPageSize;
+  const visibleItems = items.slice(startIndex, startIndex + feedbackPageSize);
+  const endIndex = startIndex + visibleItems.length;
+
+  pagination.nav.hidden = pageCount <= 1;
+  pagination.status.textContent =
+    `Page ${feedbackPages[status] + 1} of ${pageCount} · Reviews ${startIndex + 1}–${endIndex} of ${items.length}`;
+  pagination.nav.querySelector('[data-page-direction="-1"]').disabled =
+    feedbackPages[status] === 0;
+  pagination.nav.querySelector('[data-page-direction="1"]').disabled =
+    feedbackPages[status] >= pageCount - 1;
+
 
   container.innerHTML =
-    items
+    visibleItems
       .map(
         function (item) {
 
@@ -1480,7 +1556,8 @@ function renderFeedback(
               <button
                 type="button"
                 class="approve-button"
-                onclick="approveFeedback('${item.id}')"
+                data-feedback-action="approve"
+                data-feedback-id="${escapeHTML(item.id)}"
               >
                 APPROVE
               </button>
@@ -1488,7 +1565,8 @@ function renderFeedback(
               <button
                 type="button"
                 class="reject-button"
-                onclick="rejectFeedback('${item.id}')"
+                data-feedback-action="reject"
+                data-feedback-id="${escapeHTML(item.id)}"
               >
                 REJECT
               </button>
@@ -1496,7 +1574,8 @@ function renderFeedback(
               <button
                 type="button"
                 class="delete-button"
-                onclick="deleteFeedback('${item.id}')"
+                data-feedback-action="delete"
+                data-feedback-id="${escapeHTML(item.id)}"
               >
                 DELETE
               </button>
@@ -1515,7 +1594,8 @@ function renderFeedback(
               <button
                 type="button"
                 class="reject-button"
-                onclick="rejectFeedback('${item.id}')"
+                data-feedback-action="reject"
+                data-feedback-id="${escapeHTML(item.id)}"
               >
                 REJECT
               </button>
@@ -1523,7 +1603,8 @@ function renderFeedback(
               <button
                 type="button"
                 class="delete-button"
-                onclick="deleteFeedback('${item.id}')"
+                data-feedback-action="delete"
+                data-feedback-id="${escapeHTML(item.id)}"
               >
                 DELETE
               </button>
@@ -1542,7 +1623,8 @@ function renderFeedback(
               <button
                 type="button"
                 class="approve-button"
-                onclick="approveFeedback('${item.id}')"
+                data-feedback-action="approve"
+                data-feedback-id="${escapeHTML(item.id)}"
               >
                 APPROVE
               </button>
@@ -1550,7 +1632,8 @@ function renderFeedback(
               <button
                 type="button"
                 class="delete-button"
-                onclick="deleteFeedback('${item.id}')"
+                data-feedback-action="delete"
+                data-feedback-id="${escapeHTML(item.id)}"
               >
                 DELETE
               </button>
@@ -1603,11 +1686,7 @@ function renderFeedback(
               </div>
 
 
-              <div class="feedback-text">
-
-                ${escapeHTML(item.feedback)}
-
-              </div>
+              <div class="feedback-text">${escapeHTML(String(item.feedback || "").trim())}</div>
 
 
               <div class="feedback-actions">
@@ -1625,6 +1704,73 @@ function renderFeedback(
       .join("");
 
 }
+
+document.querySelectorAll(".feedback-pagination").forEach(
+  function (pagination) {
+    pagination.addEventListener("click", function (event) {
+      const button = event.target.closest("[data-feedback-page][data-page-direction]");
+      if (!button || button.disabled) return;
+
+      const status = button.dataset.feedbackPage;
+      const direction = Number(button.dataset.pageDirection);
+      if (!Object.prototype.hasOwnProperty.call(feedbackPages, status)) return;
+
+      const pageCount = Math.ceil(feedbackByStatus[status].length / feedbackPageSize);
+      feedbackPages[status] = Math.max(
+        0,
+        Math.min(feedbackPages[status] + direction, pageCount - 1)
+      );
+
+      const containers = {
+        pending: pendingList,
+        approved: approvedList,
+        rejected: rejectedList
+      };
+      renderFeedback(
+        feedbackByStatus[status],
+        containers[status],
+        status,
+        feedbackPagination[status]
+      );
+      document.getElementById(`${status}FeedbackSection`).scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    });
+  }
+);
+
+const feedbackIdPattern =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const feedbackActionHandlers = {
+  approve: approveFeedback,
+  reject: rejectFeedback,
+  delete: deleteFeedback
+};
+
+[pendingList, approvedList, rejectedList].forEach(
+  function (container) {
+    container.addEventListener("click", function (event) {
+      if (!(event.target instanceof Element)) return;
+
+      const button = event.target.closest("button[data-feedback-action][data-feedback-id]");
+      if (!button || !container.contains(button)) return;
+
+      const action = button.dataset.feedbackAction;
+      const id = button.dataset.feedbackId;
+      if (!feedbackIdPattern.test(id)) {
+        console.error("Invalid feedback ID in action button.");
+        return;
+      }
+
+      if (!Object.prototype.hasOwnProperty.call(feedbackActionHandlers, action)) return;
+
+      const handler = feedbackActionHandlers[action];
+      if (typeof handler === "function") void handler(id);
+    });
+  }
+);
 
 
 

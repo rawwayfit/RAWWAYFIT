@@ -104,6 +104,9 @@ const certificateNext =
 const certificateCounter =
   document.getElementById("certificateCounter");
 
+const certificatePagination =
+  document.getElementById("certificatePagination");
+
 let certificateCurrent = 0;
 let certificateAutoSlide;
 
@@ -142,8 +145,46 @@ function showCertificate(index) {
         i === certificateCurrent
       );
 
+      slide.classList.toggle(
+        "previous",
+        i === (
+          certificateCurrent - 1 +
+          certificateSlides.length
+        ) % certificateSlides.length
+      );
+
+      slide.classList.toggle(
+        "next",
+        i === (
+          certificateCurrent + 1
+        ) % certificateSlides.length
+      );
+
     }
   );
+
+  if (certificatePagination) {
+    certificatePagination
+      .querySelectorAll("button")
+      .forEach(
+        function (button, i) {
+
+          const isCurrent =
+            i === certificateCurrent;
+
+          button.classList.toggle(
+            "active",
+            isCurrent
+          );
+
+          button.setAttribute(
+            "aria-pressed",
+            String(isCurrent)
+          );
+
+        }
+      );
+  }
 
 
   if (certificateCounter) {
@@ -152,6 +193,43 @@ function showCertificate(index) {
       `${certificateCurrent + 1} / ${certificateSlides.length}`;
 
   }
+
+}
+
+
+if (certificatePagination) {
+
+  certificateSlides.forEach(
+    function (slide, i) {
+
+      const button =
+        document.createElement("button");
+
+      button.type = "button";
+      button.className = "certificate-dot";
+      button.setAttribute(
+        "aria-label",
+        `Show certificate ${i + 1}`
+      );
+      button.setAttribute(
+        "aria-pressed",
+        String(i === certificateCurrent)
+      );
+
+      button.addEventListener(
+        "click",
+        function () {
+
+          showCertificate(i);
+          resetCertificateAutoSlide();
+
+        }
+      );
+
+      certificatePagination.append(button);
+
+    }
+  );
 
 }
 
@@ -678,6 +756,30 @@ function getVisibleFeedbackCount() {
 }
 
 
+function formatFeedbackDate(date) {
+
+  if (!date) {
+    return "";
+  }
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "";
+  }
+
+  return parsedDate.toLocaleDateString(
+    "en-IN",
+    {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    }
+  );
+
+}
+
+
 /* UPDATE FEEDBACK CAROUSEL */
 
 function updateFeedbackCarousel() {
@@ -713,8 +815,9 @@ function updateFeedbackCarousel() {
       maximumIndex
     );
 
-
   if (cards.length > 0) {
+
+    feedbackTrack.style.alignItems = "flex-start";
 
     const firstCard = cards[0];
 
@@ -733,9 +836,36 @@ function updateFeedbackCarousel() {
     feedbackTrack.style.transform =
       `translateX(-${feedbackIndex * step}px)`;
 
+    const tallestVisibleCard =
+      Array.from(cards)
+        .slice(
+          feedbackIndex,
+          feedbackIndex + visibleCount
+        )
+        .reduce(
+          function (height, card) {
+            return Math.max(
+              height,
+              card.getBoundingClientRect().height
+            );
+          },
+          0
+        );
+
+    feedbackTrack.style.height =
+      `${Math.ceil(tallestVisibleCard)}px`;
+
+    feedbackTrack.style.removeProperty(
+      "align-items"
+    );
+
   } else {
 
     feedbackTrack.style.transform = "";
+    feedbackTrack.style.height = "";
+    feedbackTrack.style.removeProperty(
+      "align-items"
+    );
 
   }
 
@@ -851,9 +981,16 @@ function renderFeedback() {
                     “${escapeHTML(item.feedback)}”
                   </p>
 
-                  <strong>
-                    — ${escapeHTML(item.name)}
+                  <strong class="testimonial-author">
+                    ${escapeHTML(item.name)}
                   </strong>
+
+                  <time
+                    class="testimonial-date"
+                    datetime="${escapeHTML(item.created_at || "")}"
+                  >
+                    Uploaded ${formatFeedbackDate(item.created_at)}
+                  </time>
 
                 </article>
               `;
@@ -878,6 +1015,19 @@ function renderFeedback() {
 
 
   feedbackIndex = 0;
+
+  updateFeedbackCarousel();
+
+}
+
+
+function moveFeedbackCarousel(direction) {
+
+  feedbackIndex =
+    Math.max(
+      0,
+      feedbackIndex + direction
+    );
 
   updateFeedbackCarousel();
 
@@ -961,13 +1111,7 @@ if (feedbackPrevious) {
     "click",
     function () {
 
-      feedbackIndex =
-        Math.max(
-          0,
-          feedbackIndex - 1
-        );
-
-      updateFeedbackCarousel();
+      moveFeedbackCarousel(-1);
 
     }
   );
@@ -985,10 +1129,79 @@ if (feedbackNext) {
     "click",
     function () {
 
-      feedbackIndex += 1;
+      moveFeedbackCarousel(1);
 
-      updateFeedbackCarousel();
+    }
+  );
 
+}
+
+
+if (feedbackViewport) {
+
+  let feedbackPointerStart = null;
+
+  feedbackViewport.addEventListener(
+    "pointerdown",
+    function (event) {
+
+      if (
+        !event.isPrimary ||
+        (
+          event.pointerType === "mouse" &&
+          event.button !== 0
+        )
+      ) {
+        feedbackPointerStart = null;
+        return;
+      }
+
+      feedbackPointerStart = {
+        x: event.clientX,
+        y: event.clientY,
+        pointerId: event.pointerId
+      };
+
+    }
+  );
+
+  feedbackViewport.addEventListener(
+    "pointerup",
+    function (event) {
+
+      if (
+        !feedbackPointerStart ||
+        event.pointerId !==
+          feedbackPointerStart.pointerId
+      ) {
+        feedbackPointerStart = null;
+        return;
+      }
+
+      const deltaX =
+        event.clientX - feedbackPointerStart.x;
+
+      const deltaY =
+        event.clientY - feedbackPointerStart.y;
+
+      feedbackPointerStart = null;
+
+      if (
+        Math.abs(deltaX) < 45 ||
+        Math.abs(deltaX) <= Math.abs(deltaY)
+      ) {
+        return;
+      }
+
+      moveFeedbackCarousel(deltaX < 0 ? 1 : -1);
+
+    }
+  );
+
+  feedbackViewport.addEventListener(
+    "pointercancel",
+    function () {
+      feedbackPointerStart = null;
     }
   );
 
