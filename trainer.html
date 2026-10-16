@@ -31,7 +31,18 @@
     <form id="loginForm" class="rw-grid">
       <div class="rw-field full"><label for="email">Trainer email</label><input id="email" type="email" autocomplete="username" required></div>
       <div class="rw-field full"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+      <div class="rw-field full"><button class="rw-password-reset-link" id="forgotPasswordButton" type="button">Forgot password?</button></div>
       <div class="rw-field full"><button class="rw-btn" id="loginButton" type="submit">Sign in</button><p id="loginMessage" class="rw-message" role="status" aria-live="polite"></p></div>
+    </form>
+  </section>
+
+  <section id="passwordRecoveryPanel" class="rw-card rw-hidden">
+    <h2>Set a new password</h2>
+    <p class="rw-help">Choose a new password for your trainer account.</p>
+    <form id="passwordRecoveryForm" class="rw-grid">
+      <div class="rw-field full"><label for="newPassword">New password</label><input id="newPassword" type="password" autocomplete="new-password" minlength="8" required></div>
+      <div class="rw-field full"><label for="confirmNewPassword">Confirm new password</label><input id="confirmNewPassword" type="password" autocomplete="new-password" minlength="8" required></div>
+      <div class="rw-field full"><button class="rw-btn" id="saveNewPasswordButton" type="submit">Update password</button><p id="passwordRecoveryMessage" class="rw-message" role="status" aria-live="polite"></p></div>
     </form>
   </section>
 

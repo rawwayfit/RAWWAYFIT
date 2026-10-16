@@ -17,6 +17,8 @@
   const assessmentDetails = $("assessmentDetails");
   const notesMessage = $("notesMessage");
   const mobileLayout = window.matchMedia("(max-width: 700px)");
+  const passwordRecoveryPanel = $("passwordRecoveryPanel");
+  const passwordRecoveryForm = $("passwordRecoveryForm");
 
   let supabaseClient = null;
   let allAssessments = [];
@@ -24,6 +26,7 @@
   let lastClientTrigger = null;
   let clientPage = 0;
   let clientStatusFilter = "all";
+  let passwordRecoveryActive = false;
   const clientPageSize = 3;
 
   function msg(el, text, kind) {
@@ -65,6 +68,14 @@
     loginPanel.classList.toggle("rw-hidden", isLoggedIn);
     dashboardPanel.classList.toggle("rw-hidden", !isLoggedIn);
     $("signOutButton").classList.toggle("rw-hidden", !isLoggedIn);
+  }
+
+  function showPasswordRecovery(isActive) {
+    passwordRecoveryActive = isActive;
+    passwordRecoveryPanel.classList.toggle("rw-hidden", !isActive);
+    loginPanel.classList.toggle("rw-hidden", isActive);
+    dashboardPanel.classList.add("rw-hidden");
+    $("signOutButton").classList.add("rw-hidden");
   }
 
   function formatDate(value) {
@@ -904,6 +915,71 @@
     }
   });
 
+  $("forgotPasswordButton").addEventListener("click", async function () {
+    const email = $("email").value.trim();
+    if (!email) {
+      msg(loginMessage, "Enter your trainer email address first.", "error");
+      $("email").focus();
+      return;
+    }
+
+    const button = $("forgotPasswordButton");
+    button.disabled = true;
+    msg(loginMessage, "Requesting password reset…", "");
+
+    try {
+      supabaseClient = supabaseClient || getClient();
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: "https://rawwayfit.in/trainer.html"
+      });
+      if (error) throw error;
+
+      msg(
+        loginMessage,
+        "If an account exists for that email, password reset instructions will be sent.",
+        "success"
+      );
+    } catch (error) {
+      console.error(error);
+      msg(loginMessage, "Unable to start password reset right now. Please try again later.", "error");
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  passwordRecoveryForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    const password = $("newPassword").value;
+    if (password !== $("confirmNewPassword").value) {
+      msg($("passwordRecoveryMessage"), "The passwords do not match.", "error");
+      return;
+    }
+
+    const button = $("saveNewPasswordButton");
+    button.disabled = true;
+    button.textContent = "Updating…";
+    msg($("passwordRecoveryMessage"), "", "");
+
+    try {
+      const { error } = await supabaseClient.auth.updateUser({ password });
+      if (error) throw error;
+
+      const { error: signOutError } = await supabaseClient.auth.signOut();
+      if (signOutError) throw signOutError;
+
+      passwordRecoveryForm.reset();
+      showPasswordRecovery(false);
+      showDashboard(false);
+      msg(loginMessage, "Password updated. Sign in with your new password.", "success");
+    } catch (error) {
+      console.error(error);
+      msg($("passwordRecoveryMessage"), "Could not update your password. Request a new reset email and try again.", "error");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Update password";
+    }
+  });
+
   $("signOutButton").addEventListener("click", async function () {
     const button = $("signOutButton");
     button.disabled = true;
@@ -1106,23 +1182,32 @@
       supabaseClient = getClient();
       showDashboard(false);
 
+      supabaseClient.auth.onAuthStateChange((event, sessionNow) => {
+        if (event === "PASSWORD_RECOVERY") {
+          showPasswordRecovery(true);
+          msg($("passwordRecoveryMessage"), "", "");
+          return;
+        }
+
+        if (!sessionNow) {
+          if (passwordRecoveryActive) return;
+          showDashboard(false);
+          allAssessments = [];
+        }
+      });
+
       const {
         data: { session }
       } = await supabaseClient.auth.getSession();
 
-      if (session) {
+      if (passwordRecoveryActive) {
+        showPasswordRecovery(true);
+      } else if (session) {
         showDashboard(true);
         await loadAssessments();
       } else {
         showDashboard(false);
       }
-
-      supabaseClient.auth.onAuthStateChange((_event, sessionNow) => {
-        if (!sessionNow) {
-          showDashboard(false);
-          allAssessments = [];
-        }
-      });
     } catch (error) {
       console.error(error);
       msg(

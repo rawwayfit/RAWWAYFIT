@@ -704,12 +704,24 @@
 
   <div class="login-card">
 
+    <div class="admin-login-brand">
+      <img
+        src="https://raw.githubusercontent.com/rawwayfit/RWF-Photos/refs/heads/main/logo/main_logo.png"
+        alt=""
+        width="200"
+        height="60"
+      >
+      <span>RAWWAYFIT</span>
+    </div>
+
+    <p class="admin-login-kicker">Private admin area</p>
+
     <h1>
-      RAWWAYFIT
+      Feedback Administration
     </h1>
 
     <p class="subtitle">
-      Feedback Administration
+      Sign in to review and manage client feedback.
     </p>
 
 
@@ -758,20 +770,15 @@
           LOGIN
         </button>
 
-
-        <button
-          type="button"
-          id="createAccountButton"
-        >
-          CREATE ACCOUNT
-        </button>
-
       </div>
 
+      <button class="admin-forgot-password" id="forgotPasswordButton" type="button">Forgot password?</button>
 
       <p
         id="loginMessage"
         class="login-message"
+        role="status"
+        aria-live="polite"
       ></p>
 
 
@@ -779,6 +786,28 @@
 
   </div>
 
+</div>
+
+<div id="passwordRecoveryScreen" class="login-wrapper hidden">
+  <div class="login-card">
+    <p class="admin-login-kicker">Account recovery</p>
+    <h1>Set a new password</h1>
+    <p class="subtitle">Choose a new password for your feedback admin account.</p>
+    <form id="passwordRecoveryForm">
+      <div class="form-group">
+        <label for="newAdminPassword">NEW PASSWORD</label>
+        <input id="newAdminPassword" type="password" autocomplete="new-password" minlength="8" required>
+      </div>
+      <div class="form-group">
+        <label for="confirmAdminPassword">CONFIRM NEW PASSWORD</label>
+        <input id="confirmAdminPassword" type="password" autocomplete="new-password" minlength="8" required>
+      </div>
+      <div class="login-actions">
+        <button type="submit" class="primary-button" id="saveAdminPasswordButton">UPDATE PASSWORD</button>
+      </div>
+      <p id="passwordRecoveryMessage" class="login-message" role="status" aria-live="polite"></p>
+    </form>
+  </div>
 </div>
 
 
@@ -1083,6 +1112,9 @@ const supabaseClient =
 const loginScreen =
   document.getElementById("loginScreen");
 
+const passwordRecoveryScreen =
+  document.getElementById("passwordRecoveryScreen");
+
 
 const adminDashboard =
   document.getElementById("adminDashboard");
@@ -1095,11 +1127,16 @@ const loginForm =
 const loginButton =
   document.getElementById("loginButton");
 
+const forgotPasswordButton =
+  document.getElementById("forgotPasswordButton");
 
-const createAccountButton =
-  document.getElementById(
-    "createAccountButton"
-  );
+const passwordRecoveryForm =
+  document.getElementById("passwordRecoveryForm");
+
+const passwordRecoveryMessage =
+  document.getElementById("passwordRecoveryMessage");
+
+let passwordRecoveryActive = false;
 
 
 const loginMessage =
@@ -1291,7 +1328,29 @@ function formatDate(date) {
 
 function showLogin() {
 
+  passwordRecoveryScreen.classList.add(
+    "hidden"
+  );
+
   loginScreen.classList.remove(
+    "hidden"
+  );
+
+  adminDashboard.classList.add(
+    "hidden"
+  );
+
+}
+
+function showPasswordRecovery() {
+
+  passwordRecoveryActive = true;
+
+  loginScreen.classList.add(
+    "hidden"
+  );
+
+  passwordRecoveryScreen.classList.remove(
     "hidden"
   );
 
@@ -1308,6 +1367,12 @@ function showLogin() {
 ===================================================== */
 
 function showDashboard() {
+
+  passwordRecoveryActive = false;
+
+  passwordRecoveryScreen.classList.add(
+    "hidden"
+  );
 
   loginScreen.classList.add(
     "hidden"
@@ -2040,86 +2105,75 @@ loginForm.addEventListener(
   }
 );
 
-
-
-/* =====================================================
-   CREATE ACCOUNT
-===================================================== */
-
-createAccountButton.addEventListener(
+forgotPasswordButton.addEventListener(
   "click",
   async function () {
+    const emailInput = document.getElementById("loginEmail");
+    const email = emailInput.value.trim();
 
-    const email =
-      document.getElementById(
-        "loginEmail"
-      ).value.trim();
-
-
-    const password =
-      document.getElementById(
-        "loginPassword"
-      ).value;
-
-
-    if (!email || !password) {
-
-      loginMessage.textContent =
-        "Enter an email and password first.";
-
+    if (!email || !emailInput.checkValidity()) {
+      loginMessage.textContent = "Enter a valid email address first.";
+      emailInput.focus();
       return;
-
     }
 
+    forgotPasswordButton.disabled = true;
+    loginMessage.textContent = "Requesting password reset...";
 
-    if (password.length < 6) {
-
-      loginMessage.textContent =
-        "Password must contain at least 6 characters.";
-
-      return;
-
-    }
-
-
-    createAccountButton.disabled =
-      true;
-
-
-    loginMessage.textContent =
-      "Creating account...";
-
-
-    const result =
-      await supabaseClient.auth
-        .signUp({
-          email: email,
-          password: password
-        });
-
-
-    createAccountButton.disabled =
-      false;
-
-
-    if (result.error) {
-
-      console.error(
-        result.error
-      );
-
+    try {
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: "https://rawwayfit.in/feedback-admin.html"
+      });
+      if (error) throw error;
 
       loginMessage.textContent =
-        result.error.message;
+        "If an account exists for that email, password reset instructions will be sent.";
+    } catch (error) {
+      console.error(error);
+      loginMessage.textContent =
+        "Unable to start password reset right now. Please try again later.";
+    } finally {
+      forgotPasswordButton.disabled = false;
+    }
+  }
+);
 
+passwordRecoveryForm.addEventListener(
+  "submit",
+  async function (event) {
+    event.preventDefault();
+
+    const password = document.getElementById("newAdminPassword").value;
+    const confirmation = document.getElementById("confirmAdminPassword").value;
+    if (password !== confirmation) {
+      passwordRecoveryMessage.textContent = "The passwords do not match.";
       return;
-
     }
 
+    const button = document.getElementById("saveAdminPasswordButton");
+    button.disabled = true;
+    button.textContent = "UPDATING...";
+    passwordRecoveryMessage.textContent = "";
 
-    loginMessage.textContent =
-      "Account created. If email confirmation is enabled, check your email before logging in.";
+    try {
+      const { error } = await supabaseClient.auth.updateUser({ password });
+      if (error) throw error;
 
+      const { error: signOutError } = await supabaseClient.auth.signOut();
+      if (signOutError) throw signOutError;
+
+      passwordRecoveryForm.reset();
+      showLogin();
+      loginMessage.textContent =
+        "Password updated. Sign in with your new password.";
+    } catch (error) {
+      console.error(error);
+      passwordRecoveryMessage.textContent =
+        "Could not update your password. Request a new reset email and try again.";
+    } finally {
+      button.disabled = false;
+      button.textContent = "UPDATE PASSWORD";
+    }
   }
 );
 
@@ -2201,6 +2255,14 @@ async function checkExistingSession() {
   const session =
     result.data.session;
 
+  if (passwordRecoveryActive) {
+
+    showPasswordRecovery();
+
+    return;
+
+  }
+
 
   if (!session) {
 
@@ -2230,6 +2292,14 @@ async function checkExistingSession() {
 
   }
 
+  if (passwordRecoveryActive) {
+
+    showPasswordRecovery();
+
+    return;
+
+  }
+
 
   showDashboard();
 
@@ -2246,6 +2316,14 @@ async function checkExistingSession() {
 
 supabaseClient.auth.onAuthStateChange(
   async function (event, session) {
+
+    if (event === "PASSWORD_RECOVERY") {
+
+      showPasswordRecovery();
+
+      return;
+
+    }
 
     if (
       event === "SIGNED_OUT"

@@ -54,6 +54,9 @@ input:focus, select:focus, textarea:focus { outline:3px solid #2457e626; border-
 .rw-btn.secondary { background:#f0f4ff; color:#334155; border-color:#cbd6e8; box-shadow:none; }
 .rw-btn.danger { background:#b91c1c; color:#fff; border-color:#991b1b; box-shadow:none; }
 .rw-btn:disabled { opacity:.6; cursor:wait; }
+.rw-password-reset-link { justify-self:start; width:auto; min-height:0; padding:2px 0; border:0; background:transparent; color:var(--rw-blue); font:700 14px/1.4 Arial,Helvetica,sans-serif; text-align:left; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.rw-password-reset-link:hover { color:var(--rw-purple); }
+.rw-password-reset-link:focus-visible { outline:3px solid #2457e666; outline-offset:3px; border-radius:3px; }
 .rw-actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
 .rw-message { margin:14px 0 0; color:var(--rw-muted); }
 .rw-message.error { color:#b91c1c; }
