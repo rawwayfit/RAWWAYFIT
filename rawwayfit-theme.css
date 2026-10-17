@@ -2073,3 +2073,84 @@
     max-width: 110px;
   }
 }
+
+@media (max-device-width: 700px) {
+  .rw-home-theme .desktop-nav {
+    display: none;
+  }
+
+  .rw-home-theme .menu-toggle {
+    display: flex;
+  }
+
+  .rw-home-theme #home.hero {
+    min-height: auto;
+    padding: 28px 0 34px;
+  }
+
+  .rw-home-theme #home .hero-grid {
+    width: min(1180px, 92%);
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .rw-home-theme #home .hero-image {
+    order: -1;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+    justify-self: center;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .rw-home-theme #home .hero-image img {
+    object-fit: contain;
+  }
+
+  .rw-home-theme #home .hero-content {
+    width: 100%;
+    max-width: none;
+    text-align: center;
+  }
+
+  .rw-home-theme #home .hero-eyebrow {
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .rw-home-theme #home h1 {
+    max-width: none;
+    margin-bottom: 16px;
+    font-size: clamp(35px, 9.4vw, 40px);
+    line-height: .98;
+    letter-spacing: -1.4px;
+  }
+
+  .rw-home-theme #home h1 span {
+    margin-top: 5px;
+  }
+
+  .rw-home-theme #home .hero-text {
+    max-width: 520px;
+    margin: 0 auto 20px;
+    font-size: 14px;
+  }
+
+  .rw-home-theme #home .hero-buttons {
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .rw-home-theme #home .hero-buttons .primary-button {
+    width: 100%;
+    max-width: 100%;
+    min-height: 54px;
+    justify-content: center;
+    text-align: center;
+  }
+}
