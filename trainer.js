@@ -67,6 +67,8 @@
   function showDashboard(isLoggedIn) {
     loginPanel.classList.toggle("rw-hidden", isLoggedIn);
     dashboardPanel.classList.toggle("rw-hidden", !isLoggedIn);
+    $("trainerSessionActions").classList.toggle("rw-hidden", !isLoggedIn);
+    $("refreshAssessmentsButton").classList.toggle("rw-hidden", !isLoggedIn);
     $("signOutButton").classList.toggle("rw-hidden", !isLoggedIn);
   }
 
@@ -75,6 +77,8 @@
     passwordRecoveryPanel.classList.toggle("rw-hidden", !isActive);
     loginPanel.classList.toggle("rw-hidden", isActive);
     dashboardPanel.classList.add("rw-hidden");
+    $("trainerSessionActions").classList.add("rw-hidden");
+    $("refreshAssessmentsButton").classList.add("rw-hidden");
     $("signOutButton").classList.add("rw-hidden");
   }
 
@@ -1014,6 +1018,19 @@
       msg(listMessage, "Could not sign out. Please try again.", "error");
     } finally {
       button.disabled = false;
+    }
+  });
+
+  $("refreshAssessmentsButton").addEventListener("click", async function () {
+    const button = $("refreshAssessmentsButton");
+    button.disabled = true;
+    button.textContent = "Refreshing…";
+
+    try {
+      await loadAssessments();
+    } finally {
+      button.disabled = false;
+      button.textContent = "Refresh";
     }
   });
 

@@ -116,6 +116,11 @@
       gap: 10px;
     }
 
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
     /* =====================================================
        BUTTONS
@@ -625,18 +630,49 @@
     @media (max-width: 700px) {
 
       .header-inner {
-        min-height: 70px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        min-height: 0;
+        gap: 8px;
+        padding: 10px 0;
       }
 
-
       .logo {
+        grid-column: 1;
+        grid-row: 1;
         font-size: 20px;
       }
 
+      .header-controls {
+        display: contents;
+      }
 
-      .header-actions button {
+      .back-website-link {
+        grid-column: 2;
+        grid-row: 1;
+        justify-self: end;
+      }
+
+      .header-actions {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        width: 100%;
+      }
+
+      .rw-admin-theme .header-actions button {
+        min-height: 42px;
+        width: 100%;
         padding: 9px 12px;
 
+        font-size: 10px;
+      }
+
+      .back-website-link {
+        min-height: 40px;
+        padding: 8px 9px;
         font-size: 10px;
       }
 
@@ -686,6 +722,106 @@
 
   </style>
   <link rel="stylesheet" href="rawwayfit-theme.css">
+  <style>
+    .back-website-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 16px;
+      border: 1px solid var(--rw-blue);
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--rw-blue), var(--rw-purple));
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.2;
+      text-decoration: none;
+      white-space: nowrap;
+      box-shadow: none;
+      transition: filter .2s ease, transform .2s ease;
+    }
+
+    .back-website-link:hover {
+      filter: brightness(.96);
+      transform: translateY(-1px);
+    }
+
+    .rw-admin-theme .header-actions button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0;
+      line-height: 1.2;
+    }
+
+    .rw-admin-theme #refreshButton {
+      border-color: #cbd6e8;
+      background: #f1f5f9;
+      color: #334155;
+      box-shadow: none;
+    }
+
+    .rw-admin-theme #refreshButton:hover {
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .rw-admin-theme #logoutButton {
+      border-color: #991b1b;
+      background: #b91c1c;
+      color: #fff;
+      box-shadow: none;
+    }
+
+    .rw-admin-theme #logoutButton:hover {
+      background: #991b1b;
+      color: #fff;
+    }
+
+    @media (max-width: 700px) {
+      .back-website-link {
+        min-height: 40px;
+        padding: 8px 9px;
+        font-size: 10px;
+        align-self: center;
+      }
+
+      .rw-admin-theme .header-actions button {
+        min-height: 42px;
+        padding: 9px 12px;
+        font-size: 10px;
+      }
+    }
+
+    @media (max-width: 380px) {
+      .rw-admin-theme .header-inner {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .rw-admin-theme .logo {
+        grid-column: 1;
+        grid-row: 1;
+        min-width: 0;
+      }
+
+      .rw-admin-theme .back-website-link {
+        grid-column: 1;
+        grid-row: 2;
+        justify-self: end;
+      }
+
+      .rw-admin-theme .header-actions {
+        grid-column: 1;
+        grid-row: 3;
+      }
+    }
+  </style>
 
 </head>
 
@@ -842,23 +978,27 @@
       </div>
 
 
-      <div class="header-actions">
+      <div class="header-controls">
+        <a class="back-website-link" href="index.html">
+          ← Back to website
+        </a>
 
-        <button
-          type="button"
-          id="refreshButton"
-        >
-          REFRESH
-        </button>
+        <div class="header-actions">
+          <button
+            type="button"
+            id="refreshButton"
+          >
+            Refresh
+          </button>
 
 
-        <button
-          type="button"
-          id="logoutButton"
-        >
-          SIGN OUT
-        </button>
-
+          <button
+            type="button"
+            id="logoutButton"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
 
     </div>

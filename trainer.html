@@ -10,14 +10,17 @@
 </head>
 <body>
 <main class="rw-shell">
-  <header class="rw-top">
+  <header class="rw-top rw-trainer-top">
     <a class="rw-brand" href="index.html" aria-label="RAW WAY FIT home">
       <img src="https://raw.githubusercontent.com/rawwayfit/RWF-Photos/refs/heads/main/logo/main_logo.png" alt="" width="200" height="60">
       <span class="rw-brand-name">RAWWAYFIT</span>
     </a>
     <div class="rw-top-actions">
       <a class="rw-navlink" href="index.html">← Back to website</a>
-      <button id="signOutButton" class="rw-btn danger rw-hidden" type="button">Sign out</button>
+      <div id="trainerSessionActions" class="rw-trainer-session-actions rw-hidden">
+        <button id="refreshAssessmentsButton" class="rw-btn secondary rw-hidden" type="button">Refresh</button>
+        <button id="signOutButton" class="rw-btn danger rw-hidden" type="button">Sign out</button>
+      </div>
     </div>
   </header>
   <section class="rw-hero">

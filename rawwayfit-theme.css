@@ -553,6 +553,17 @@
   box-shadow: 0 8px 26px #203b6910;
 }
 
+.rw-home-theme .about-stats div {
+  transition: transform .2s ease, border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+}
+
+.rw-home-theme .about-stats div:hover {
+  transform: translateY(-5px);
+  border-color: #b7c8f5;
+  background: #f7f9ff;
+  box-shadow: 0 14px 30px #203b6926;
+}
+
 .rw-home-theme .about-stats span,
 .rw-home-theme .service-number,
 .rw-home-theme .contact-card span,
@@ -2153,4 +2164,20 @@
     justify-content: center;
     text-align: center;
   }
+}
+
+.rw-home-theme button:not(:disabled),
+.rw-admin-theme button:not(:disabled),
+.rw-home-theme .button {
+  transition: transform .2s ease, background-color .2s ease, border-color .2s ease, color .2s ease;
+}
+
+.rw-home-theme button:not(:disabled):hover,
+.rw-admin-theme button:not(:disabled):hover,
+.rw-home-theme .button:hover {
+  transform: translateY(-2px);
+}
+
+.rw-home-theme #certifications .certificate-carousel > .carousel-button:hover:not(:disabled) {
+  transform: translateY(calc(-50% - 2px));
 }
