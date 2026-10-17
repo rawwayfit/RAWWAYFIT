@@ -270,3 +270,97 @@ input, select, textarea, button { max-width: 100%; }
     display: none;
   }
 }
+
+.rw-trainer-auth #loginPanel,
+.rw-trainer-auth #passwordRecoveryPanel {
+  width: min(100%, 620px);
+  margin: 28px auto 36px;
+  padding: clamp(24px, 5vw, 42px);
+  border: 1px solid #d8e2f2;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #fff 0%, #fbfcff 68%, #f5f1ff 100%);
+  box-shadow: 0 24px 60px #203b691c, 0 3px 10px #203b690a;
+}
+
+.rw-trainer-auth > .rw-shell > .rw-hero {
+  width: min(100%, 760px);
+  margin: 10px auto 16px;
+  padding: 22px 20px 6px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  text-align: center;
+}
+
+.rw-trainer-auth > .rw-shell > .rw-hero .rw-subtitle {
+  margin: 0 auto;
+}
+
+.rw-trainer-auth #loginPanel h2,
+.rw-trainer-auth #passwordRecoveryPanel h2 {
+  margin: 0;
+  color: var(--rw-text);
+  font-size: clamp(25px, 4vw, 32px);
+  letter-spacing: -.7px;
+}
+
+.rw-trainer-auth .rw-auth-eyebrow {
+  margin: 0 0 8px;
+  color: var(--rw-blue);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.rw-trainer-auth .rw-auth-intro {
+  margin: 9px 0 26px;
+  color: var(--rw-muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.rw-trainer-auth #loginForm,
+.rw-trainer-auth #passwordRecoveryForm {
+  gap: 18px;
+}
+
+.rw-trainer-auth #loginForm .rw-field,
+.rw-trainer-auth #passwordRecoveryForm .rw-field {
+  gap: 8px;
+}
+
+.rw-trainer-auth #loginForm input,
+.rw-trainer-auth #passwordRecoveryForm input {
+  min-height: 50px;
+  border-color: #cbd6e8;
+  border-radius: 11px;
+  background: #fff;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.rw-trainer-auth #loginForm input:focus,
+.rw-trainer-auth #passwordRecoveryForm input:focus {
+  border-color: var(--rw-blue);
+  box-shadow: 0 0 0 4px #2457e61a;
+}
+
+.rw-trainer-auth #loginForm .rw-password-reset-link {
+  margin-top: -3px;
+}
+
+.rw-trainer-auth #loginButton,
+.rw-trainer-auth #saveNewPasswordButton {
+  min-height: 50px;
+  border-radius: 11px;
+  font-size: 15px;
+}
+
+@media (max-width: 700px) {
+  .rw-trainer-auth #loginPanel,
+  .rw-trainer-auth #passwordRecoveryPanel {
+    margin: 18px auto 28px;
+    padding: 24px 20px;
+    border-radius: 18px;
+  }
+}

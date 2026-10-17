@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="rawwayfit-theme.css">
   <link rel="stylesheet" href="rawwayfit-app.css">
 </head>
-<body>
+<body class="rw-trainer-auth">
 <main class="rw-shell">
   <header class="rw-top rw-trainer-top">
     <a class="rw-brand" href="index.html" aria-label="RAW WAY FIT home">
@@ -30,7 +30,9 @@
   </section>
 
   <section id="loginPanel" class="rw-card">
+    <p class="rw-auth-eyebrow">Trainer portal</p>
     <h2>Trainer sign in</h2>
+    <p class="rw-auth-intro">Sign in to securely manage client assessments, coaching notes, and progress.</p>
     <form id="loginForm" class="rw-grid">
       <div class="rw-field full"><label for="email">Trainer email</label><input id="email" type="email" autocomplete="username" required></div>
       <div class="rw-field full"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
@@ -40,8 +42,9 @@
   </section>
 
   <section id="passwordRecoveryPanel" class="rw-card rw-hidden">
+    <p class="rw-auth-eyebrow">Account security</p>
     <h2>Set a new password</h2>
-    <p class="rw-help">Choose a new password for your trainer account.</p>
+    <p class="rw-auth-intro">Choose a new password for your trainer account.</p>
     <form id="passwordRecoveryForm" class="rw-grid">
       <div class="rw-field full"><label for="newPassword">New password</label><input id="newPassword" type="password" autocomplete="new-password" minlength="8" required></div>
       <div class="rw-field full"><label for="confirmNewPassword">Confirm new password</label><input id="confirmNewPassword" type="password" autocomplete="new-password" minlength="8" required></div>
