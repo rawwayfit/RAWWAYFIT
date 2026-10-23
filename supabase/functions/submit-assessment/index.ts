@@ -163,24 +163,37 @@ Deno.serve(async (req) => {
     }
 
     const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
-    const { data: saved, error: insertError } = await admin.from("client_assessments").insert({
-      client_name: name,
-      client_email: email,
-      phone,
-      declaration: true,
-      assessment_data: assessmentData,
-      training_status: "Lead",
-    }).select("id, client_number, created_at").single();
-    if (insertError || !saved) {
-      console.error("Assessment database insert failed:", insertError);
-      return json({ error: "We could not save your assessment. Please try again or contact RAW WAY FIT." }, 500);
+    // Save the assessment and reserve its email atomically.
+    const { data: saved, error: submitError } = await admin.rpc(
+      "submit_client_assessment",
+      {
+        p_client_name: name,
+        p_client_email: email,
+        p_phone: phone,
+        p_assessment_data: assessmentData,
+      }
+    );
+
+    if (submitError || !saved) {
+      if (
+        submitError?.message?.includes("ASSESSMENT_ALREADY_SUBMITTED")
+      ) {
+        return json({
+          error: "An assessment has already been submitted with this email address. Please contact Coach Rakesh if you need to submit a reassessment."
+        }, 409);
+      }
+
+      console.error("Atomic assessment submission failed:", submitError);
+      return json({
+        error: "We could not save your assessment. Please try again or contact RAW WAY FIT."
+      }, 500);
     }
 
     const clientCode = `RWF-${String(saved.client_number).padStart(6, "0")}`;
     const subjectName = name.replace(/\s+/g, " ");
     const submitted = new Date(saved.created_at).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
-    const trainerHtml = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#172033"><h2>New RAW WAY FIT client assessment</h2><p><b>Client number:</b> ${clientCode}</p><p><b>Name:</b> ${escapeHtml(name)}</p><p><b>Email:</b> ${escapeHtml(email)}</p><p><b>Phone:</b> ${escapeHtml(phone)}</p><p><b>Submitted:</b> ${escapeHtml(submitted)} (India time)</p><p>Log in to your private trainer dashboard to review the full assessment and update training status:</p><p><a href="https://rawwayfit.in/trainer.html">Open Trainer Dashboard</a></p></div>`;
-    const clientHtml = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#172033"><h2>Thank you for completing your RAW WAY FIT assessment</h2><p>Hi ${escapeHtml(name)},</p><p>Your assessment has been submitted successfully.</p><p style="font-size:20px"><b>Your client number: ${clientCode}</b></p><p>Please save this number. Your trainer can use it to find your record.</p><p><b>Submission date:</b> ${escapeHtml(submitted)} (India time)</p><p>Regards,<br>RAW WAY FIT<br><a href="https://rawwayfit.in">rawwayfit.in</a></p></div>`;
+    const trainerHtml = `<div style="margin:0;padding:24px 10px;background:#f2f2f2;font-family:Arial,Helvetica,sans-serif;color:#222"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden"><tr><td style="background:#111111;padding:28px 20px;text-align:center;border-bottom:4px solid #e32636"><img src="https://wwsiwomvwfqrjufgyfgp.supabase.co/storage/v1/object/public/images/logo-img/main_logo.png" alt="RAWWAYFIT Logo" width="160" style="display:block;width:160px;max-width:100%;height:auto;margin:0 auto 14px"><h1 style="margin:0;color:#ffffff;font-size:25px;letter-spacing:2px">RAWWAYFIT</h1><p style="margin:8px 0 0;color:#f0f0f0;font-size:12px;letter-spacing:1px">PERSONAL TRAINING &amp; ONLINE COACHING</p></td></tr><tr><td style="padding:28px 24px"><p style="margin:0 0 8px;color:#e32636;font-size:12px;font-weight:bold;letter-spacing:1px">NEW SUBMISSION</p><h2 style="margin:0 0 18px;font-size:23px;color:#171717">New Client Assessment</h2><p style="margin:0 0 20px;line-height:1.7;color:#555">A new client has submitted the RAWWAYFIT fitness assessment. Review the details below and open your trainer dashboard to view the full assessment.</p><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-collapse:collapse;font-size:14px"><tr><td style="padding:12px;background:#f7f7f7;border-bottom:1px solid #e5e5e5;color:#666;width:35%">Client number</td><td style="padding:12px;background:#f7f7f7;border-bottom:1px solid #e5e5e5;color:#e32636;font-weight:bold">${clientCode}</td></tr><tr><td style="padding:12px;border-bottom:1px solid #e5e5e5;color:#666">Name</td><td style="padding:12px;border-bottom:1px solid #e5e5e5;color:#222">${escapeHtml(name)}</td></tr><tr><td style="padding:12px;background:#f7f7f7;border-bottom:1px solid #e5e5e5;color:#666">Email</td><td style="padding:12px;background:#f7f7f7;border-bottom:1px solid #e5e5e5;color:#222;overflow-wrap:anywhere">${escapeHtml(email)}</td></tr><tr><td style="padding:12px;border-bottom:1px solid #e5e5e5;color:#666">Phone</td><td style="padding:12px;border-bottom:1px solid #e5e5e5;color:#222">${escapeHtml(phone)}</td></tr><tr><td style="padding:12px;background:#f7f7f7;color:#666">Submitted</td><td style="padding:12px;background:#f7f7f7;color:#222">${escapeHtml(submitted)} (India time)</td></tr></table><div style="text-align:center;margin:28px 0 10px"><a href="https://rawwayfit.in/trainer.html" style="display:inline-block;background:#e32636;color:#ffffff;text-decoration:none;font-weight:bold;padding:15px 24px;border-radius:5px">Open Trainer Dashboard</a></div><p style="margin:22px 0 0;color:#777;font-size:12px;line-height:1.6">Please sign in to your private trainer dashboard to review the complete assessment and update the client's training status.</p></td></tr><tr><td style="background:#111111;padding:20px;text-align:center;border-top:3px solid #e32636"><p style="margin:0 0 6px;color:#ffffff;font-weight:bold;letter-spacing:1px">RAWWAYFIT</p><p style="margin:0;color:#bbbbbb;font-size:12px">Transform Your Body. Elevate Your Life.</p><p style="margin:10px 0 0;font-size:12px"><a href="https://rawwayfit.in" style="color:#ff6874;text-decoration:none">rawwayfit.in</a></p></td></tr></table></div>`
+    const clientHtml = `<div style="margin:0;padding:24px 10px;background:#f2f2f2;font-family:Arial,Helvetica,sans-serif;color:#222"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden"><tr><td style="background:#111111;padding:28px 20px;text-align:center;border-bottom:4px solid #e32636"><img src="https://wwsiwomvwfqrjufgyfgp.supabase.co/storage/v1/object/public/images/logo-img/main_logo.png" alt="RAWWAYFIT Logo" width="160" style="display:block;width:160px;max-width:100%;height:auto;margin:0 auto 14px"><h1 style="margin:0;color:#ffffff;font-size:25px;letter-spacing:2px">RAWWAYFIT</h1><p style="margin:8px 0 0;color:#f0f0f0;font-size:12px;letter-spacing:1px">PERSONAL TRAINING &amp; ONLINE COACHING</p></td></tr><tr><td style="padding:30px 24px"><p style="margin:0 0 8px;color:#e32636;font-size:12px;font-weight:bold;letter-spacing:1px">ASSESSMENT CONFIRMATION</p><h2 style="margin:0 0 18px;font-size:24px;color:#171717">Thank You, ${escapeHtml(name)}!</h2><p style="margin:0 0 16px;line-height:1.8;color:#555">Your fitness assessment has been submitted successfully. Thank you for taking the first step toward your fitness goals. Keep this email for your records.</p><div style="margin:24px 0;padding:22px 16px;text-align:center;background:#fff5f5;border:1px solid #ffd8dc;border-radius:8px"><p style="margin:0 0 8px;color:#666;font-size:12px;font-weight:bold;letter-spacing:1px">YOUR RAWWAYFIT CLIENT NUMBER</p><p style="margin:0;color:#e32636;font-size:28px;font-weight:bold;letter-spacing:1px;overflow-wrap:anywhere">${clientCode}</p><p style="margin:12px 0 0;color:#666;font-size:13px;line-height:1.6">Please save this number. Your trainer can use it to find your assessment record.</p></div><p style="margin:18px 0 8px;color:#444;font-size:14px"><strong>Submission date:</strong> ${escapeHtml(submitted)} (India time)</p><p style="margin:20px 0;line-height:1.8;color:#555">Your fitness journey is personal, and your assessment helps your trainer understand your goals and needs.</p><div style="text-align:center;margin:26px 0"><a href="https://rawwayfit.in" style="display:inline-block;background:#e32636;color:#ffffff;text-decoration:none;font-weight:bold;padding:15px 28px;border-radius:5px">Visit RAWWAYFIT</a></div><p style="margin:24px 0 0;color:#555;line-height:1.8">Regards,<br><strong style="color:#171717">Coach Rakesh H V</strong><br>RAWWAYFIT Personal Training &amp; Online Coaching</p></td></tr><tr><td style="background:#111111;padding:20px;text-align:center;border-top:3px solid #e32636"><p style="margin:0 0 6px;color:#ffffff;font-weight:bold;letter-spacing:1px">RAWWAYFIT</p><p style="margin:0;color:#bbbbbb;font-size:12px">Transform Your Body. Elevate Your Life.</p><p style="margin:10px 0 0;font-size:12px"><a href="https://rawwayfit.in" style="color:#ff6874;text-decoration:none">rawwayfit.in</a></p></td></tr></table></div>`
 
     const [trainerEmailSent, clientEmailSent] = await Promise.all([
       attemptEmail(resendKey, fromEmail, trainerEmail, `New client assessment: ${clientCode} — ${subjectName}`, trainerHtml),

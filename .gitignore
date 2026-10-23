@@ -1,0 +1,7 @@
+# Local Supabase CLI metadata
+supabase/.temp/
+
+# Local backup files
+supabase/functions/submit-assessment/index.ts.backup
+
+supabase/functions/authorize-reassessment/index.ts.backup
