@@ -1105,6 +1105,82 @@
     }
   });
 
+
+  $("authorizeReassessmentButton").addEventListener("click", async function () {
+    if (!selected) return;
+
+    const email = String(selected.client_email || "").trim().toLowerCase();
+    const clientCode =
+      "RWF-" + String(selected.client_number || 0).padStart(6, "0");
+    const clientName = selected.client_name || "this client";
+
+    if (!email) {
+      msg(notesMessage, "This client has no email address. Reassessment cannot be authorized.", "error");
+      return;
+    }
+
+    if (!window.confirm(
+      `Authorize one new assessment for ${clientName} (${clientCode}) using ${email}? The previous assessment will be preserved. Anyone who controls this email address may submit the next assessment, so confirm the client's identity first.`
+    )) return;
+
+    const button = $("authorizeReassessmentButton");
+    button.disabled = true;
+    button.textContent = "Authorizing…";
+    msg(notesMessage, "", "");
+
+    try {
+      const {
+        data: { session },
+        error: sessionError
+      } = await supabaseClient.auth.getSession();
+
+      if (sessionError) throw sessionError;
+      if (!session?.access_token) {
+        throw new Error("Your trainer session has expired. Please sign in again.");
+      }
+
+      const { data, error } = await supabaseClient.functions.invoke(
+        "authorize-reassessment",
+        {
+          body: { email },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`
+          }
+        }
+      );
+
+      if (error) {
+        let detail = error.message || "The authorization request failed.";
+        try {
+          const response = error.context;
+          if (response && typeof response.json === "function") {
+            const body = await response.json();
+            if (body?.error) detail = body.error;
+          }
+        } catch {
+          // Keep the original function error message.
+        }
+        throw new Error(detail);
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || "Reassessment authorization failed.");
+      }
+
+      msg(notesMessage, data.message || "Reassessment authorized.", "success");
+    } catch (error) {
+      console.error("Authorize reassessment failed:", error);
+      msg(
+        notesMessage,
+        error?.message || "Could not authorize reassessment.",
+        "error"
+      );
+    } finally {
+      button.disabled = false;
+      button.textContent = "Authorize Reassessment";
+    }
+  });
+
   $("deleteAssessmentButton").addEventListener("click", async function () {
     if (!selected) return;
 
