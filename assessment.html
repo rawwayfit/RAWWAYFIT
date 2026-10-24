@@ -1,3 +1,4 @@
+// assessment.html
 <!doctype html>
 <html lang="en">
 <head>
@@ -174,5 +175,622 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="rawwayfit-config.js"></script>
 <script src="assessment.js"></script>
+<script>
+(() => {
+  "use strict";
+
+  const form = document.getElementById("assessmentForm");
+  if (!form || form.dataset.rwWizardReady === "true") return;
+  form.dataset.rwWizardReady = "true";
+
+  const steps = Array.from(
+    form.querySelectorAll(":scope > section.rw-card")
+  );
+
+  if (!steps.length) return;
+
+  const submitCard = Array.from(form.children).find(
+    el => el.querySelector("#submitButton")
+  );
+
+  const submitButton = document.getElementById("submitButton");
+  if (!submitButton) return;
+
+  let currentStep = 0;
+  let confirmedSubmission = false;
+
+  // ---------- Styles ----------
+  const style = document.createElement("style");
+  style.textContent = `
+    .rw-wizard-progress {
+      margin: 0 0 22px;
+    }
+
+    .rw-progress-track {
+      width: 100%;
+      height: 7px;
+      overflow: hidden;
+      border-radius: 20px;
+      background: #dedede;
+    }
+
+    .rw-progress-fill {
+      height: 100%;
+      width: 0;
+      background: #e32636;
+      border-radius: inherit;
+      transition: width .25s ease;
+    }
+
+    .rw-progress-label {
+      margin-top: 9px;
+      color: #777;
+      font-size: 13px;
+    }
+
+    .rw-wizard-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 22px 0;
+    }
+
+    .rw-wizard-controls button,
+    .rw-review-dialog button {
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .rw-wizard-controls button:hover,
+    .rw-review-dialog button:hover {
+      opacity: .88;
+      transform: translateY(-1px);
+    }
+
+    .rw-wizard-controls button:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .rw-wizard-primary {
+      background: #e32636;
+      color: #fff;
+    }
+
+    .rw-wizard-secondary {
+      background: #e9e9e9;
+      color: #222;
+    }
+
+    /* Popup overlay */
+    .rw-review-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(0, 0, 0, .68);
+      box-sizing: border-box;
+    }
+
+    .rw-review-modal.rw-modal-open {
+      display: flex;
+    }
+
+    /* White popup panel */
+    .rw-review-dialog {
+      position: relative;
+      width: min(760px, 100%);
+      max-height: 88vh;
+      overflow-y: auto;
+      background: #fff;
+      color: #222;
+      border-radius: 18px;
+      padding: 26px;
+      box-shadow: 0 22px 70px rgba(0, 0, 0, .28);
+      box-sizing: border-box;
+    }
+
+    .rw-review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 14px;
+      padding-bottom: 18px;
+      margin-bottom: 18px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+
+    .rw-review-title {
+      margin: 0;
+      color: #171717;
+      font-size: clamp(22px, 4vw, 29px);
+      line-height: 1.25;
+    }
+
+    .rw-review-subtitle {
+      margin: 8px 0 0;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .rw-review-close {
+      flex: 0 0 auto;
+      width: 38px;
+      height: 38px;
+      padding: 0 !important;
+      border-radius: 50% !important;
+      background: #f0f0f0;
+      color: #222;
+      font-size: 23px !important;
+      line-height: 1;
+    }
+
+    .rw-review-section {
+      margin: 0 0 14px;
+      padding: 16px;
+      background: #f8f8f8;
+      border: 1px solid #e7e7e7;
+      border-radius: 12px;
+    }
+
+    .rw-review-section h3 {
+      margin: 0 0 12px;
+      color: #171717;
+      font-size: 16px;
+    }
+
+    .rw-review-row {
+      display: grid;
+      grid-template-columns: minmax(130px, .8fr) minmax(0, 1.2fr);
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid #e9e9e9;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .rw-review-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .rw-review-question {
+      color: #666;
+      font-weight: 500;
+    }
+
+    .rw-review-answer {
+      color: #222;
+      font-weight: 600;
+      white-space: pre-wrap;
+    }
+
+    .rw-review-empty {
+      color: #777;
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    .rw-review-actions {
+      position: sticky;
+      bottom: -26px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 20px -26px -26px;
+      padding: 16px 26px;
+      background: #fff;
+      border-top: 1px solid #e8e8e8;
+    }
+
+    .rw-edit-button {
+      background: #ededed;
+      color: #222;
+    }
+
+    .rw-confirm-button {
+      background: #e32636;
+      color: #fff;
+    }
+
+    @media (max-width: 600px) {
+      .rw-review-dialog {
+        padding: 18px;
+        border-radius: 14px;
+        max-height: 92vh;
+      }
+
+      .rw-review-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .rw-review-actions {
+        bottom: -18px;
+        margin: 18px -18px -18px;
+        padding: 14px 18px;
+      }
+
+      .rw-review-actions button {
+        flex: 1 1 100%;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+
+  // ---------- Progress bar ----------
+  const progress = document.createElement("div");
+  progress.className = "rw-wizard-progress";
+  progress.innerHTML = `
+    <div class="rw-progress-track">
+      <div class="rw-progress-fill"></div>
+    </div>
+    <div class="rw-progress-label" aria-live="polite"></div>
+  `;
+
+  form.insertBefore(progress, steps[0]);
+
+  const progressFill = progress.querySelector(".rw-progress-fill");
+  const progressLabel = progress.querySelector(".rw-progress-label");
+
+  // ---------- Navigation ----------
+  const controls = document.createElement("div");
+  controls.className = "rw-wizard-controls";
+  controls.innerHTML = `
+    <button type="button" class="rw-wizard-secondary" id="rwPrevious">
+      Previous
+    </button>
+    <button type="button" class="rw-wizard-primary" id="rwNext">
+      Save &amp; Next
+    </button>
+  `;
+
+  if (submitCard) {
+    form.insertBefore(controls, submitCard);
+    submitCard.style.display = "none";
+  } else {
+    form.appendChild(controls);
+  }
+
+  const previousButton = controls.querySelector("#rwPrevious");
+  const nextButton = controls.querySelector("#rwNext");
+
+  // ---------- Review modal ----------
+  const modal = document.createElement("div");
+  modal.className = "rw-review-modal";
+  modal.id = "rwReviewModal";
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  modal.setAttribute("aria-labelledby", "rwReviewTitle");
+
+  modal.innerHTML = `
+    <div class="rw-review-dialog">
+      <div class="rw-review-header">
+        <div>
+          <h2 class="rw-review-title" id="rwReviewTitle">
+            Review Your Assessment
+          </h2>
+          <p class="rw-review-subtitle">
+            Please check your answers before submitting your RAWWAYFIT assessment.
+          </p>
+        </div>
+        <button type="button" class="rw-review-close"
+          id="rwReviewClose" aria-label="Close review">&times;</button>
+      </div>
+
+      <div id="rwReviewContent"></div>
+
+      <div class="rw-review-actions">
+        <button type="button" class="rw-edit-button" id="rwEditAnswers">
+          Go Back &amp; Edit
+        </button>
+        <button type="button" class="rw-confirm-button" id="rwConfirmSubmit">
+          Confirm &amp; Submit
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const reviewContent = modal.querySelector("#rwReviewContent");
+  const closeButton = modal.querySelector("#rwReviewClose");
+  const editButton = modal.querySelector("#rwEditAnswers");
+  const confirmButton = modal.querySelector("#rwConfirmSubmit");
+
+  // ---------- Helpers ----------
+  function getSectionTitle(section, index) {
+    const heading = section.querySelector("h1, h2, h3, h4, legend");
+    return heading
+      ? heading.textContent.trim()
+      : `Section ${index + 1}`;
+  }
+
+  function getFieldLabel(field) {
+    if (field.id) {
+      const label = Array.from(form.querySelectorAll("label"))
+        .find(item => item.htmlFor === field.id);
+      if (label) return label.textContent.trim();
+    }
+
+    const wrapper = field.closest(".rw-field");
+    const label = wrapper && wrapper.querySelector(
+      ".rw-label, label, legend"
+    );
+
+    if (label) return label.textContent.trim();
+
+    return field.name || field.id || "Answer";
+  }
+
+  function getFieldValue(field) {
+    if (field.type === "password" || field.type === "file") {
+      return field.type === "file"
+        ? Array.from(field.files || []).map(file => file.name).join(", ")
+        : "";
+    }
+
+    if (field.type === "checkbox") {
+      if (!field.checked) return "";
+      return field.value && field.value !== "on" ? field.value : "Yes";
+    }
+
+    if (field.type === "radio") {
+      return field.checked ? field.value : "";
+    }
+
+    if (field.tagName === "SELECT" && field.multiple) {
+      return Array.from(field.selectedOptions)
+        .map(option => option.textContent.trim())
+        .join(", ");
+    }
+
+    if (field.tagName === "SELECT") {
+      const option = field.selectedOptions[0];
+      return option ? option.textContent.trim() : "";
+    }
+
+    return String(field.value || "").trim();
+  }
+
+  function isHiddenField(field) {
+    return Boolean(
+      field.closest(".rw-hidden, [hidden], [aria-hidden='true']")
+    );
+  }
+
+  function buildReview() {
+    reviewContent.replaceChildren();
+
+    steps.forEach((section, index) => {
+      const sectionCard = document.createElement("div");
+      sectionCard.className = "rw-review-section";
+
+      const heading = document.createElement("h3");
+      heading.textContent = getSectionTitle(section, index);
+      sectionCard.appendChild(heading);
+
+      const fields = Array.from(section.querySelectorAll(
+        "input, select, textarea"
+      )).filter(field => {
+        if (["button", "submit", "reset", "hidden", "password"].includes(field.type)) {
+          return false;
+        }
+        if (field.disabled || isHiddenField(field)) return false;
+
+        // Avoid duplicate radio/checkbox rows.
+        if (field.type === "radio" || field.type === "checkbox") {
+          if (!field.name) return true;
+          const group = Array.from(section.querySelectorAll(
+            `input[name="${CSS.escape(field.name)}"]`
+          )).filter(item =>
+            !item.disabled && !isHiddenField(item)
+          );
+
+          return group[0] === field;
+        }
+
+        return true;
+      });
+
+      let rowCount = 0;
+      const handledGroups = new Set();
+
+      fields.forEach(field => {
+        let answer = "";
+
+        if ((field.type === "radio" || field.type === "checkbox") && field.name) {
+          const groupKey = `${field.type}:${field.name}`;
+          if (handledGroups.has(groupKey)) return;
+          handledGroups.add(groupKey);
+
+          const group = Array.from(section.querySelectorAll(
+            `input[name="${CSS.escape(field.name)}"]`
+          )).filter(item =>
+            !item.disabled && !isHiddenField(item)
+          );
+
+          if (field.type === "radio") {
+            const selected = group.find(item => item.checked);
+            if (selected) {
+              const label = getFieldLabel(selected);
+              answer = label || selected.value;
+            }
+          } else {
+            answer = group
+              .filter(item => item.checked)
+              .map(item => {
+                const label = getFieldLabel(item);
+                return label || item.value || "Yes";
+              })
+              .filter(Boolean)
+              .join(", ");
+          }
+        } else {
+          answer = getFieldValue(field);
+        }
+
+        if (!answer) return;
+
+        const row = document.createElement("div");
+        row.className = "rw-review-row";
+
+        const question = document.createElement("div");
+        question.className = "rw-review-question";
+        question.textContent = getFieldLabel(field);
+
+        const value = document.createElement("div");
+        value.className = "rw-review-answer";
+        value.textContent = answer;
+
+        row.append(question, value);
+        sectionCard.appendChild(row);
+        rowCount++;
+      });
+
+      if (!rowCount) {
+        const empty = document.createElement("p");
+        empty.className = "rw-review-empty";
+        empty.textContent = "No answers provided in this section.";
+        sectionCard.appendChild(empty);
+      }
+
+      reviewContent.appendChild(sectionCard);
+    });
+  }
+
+  function showStep(index) {
+    currentStep = Math.max(0, Math.min(index, steps.length - 1));
+
+    steps.forEach((section, i) => {
+      section.style.display = i === currentStep ? "" : "none";
+    });
+
+    progressFill.style.width =
+      `${((currentStep + 1) / steps.length) * 100}%`;
+
+    progressLabel.textContent =
+      `Step ${currentStep + 1} of ${steps.length} — ` +
+      getSectionTitle(steps[currentStep], currentStep);
+
+    previousButton.disabled = currentStep === 0;
+    nextButton.textContent =
+      currentStep === steps.length - 1 ? "Review & Submit" : "Save & Next";
+
+    controls.style.display = "";
+    if (submitCard) submitCard.style.display = "none";
+  }
+
+  function openReview() {
+    if (!form.reportValidity()) return;
+
+    buildReview();
+    modal.classList.add("rw-modal-open");
+    document.body.style.overflow = "hidden";
+    closeButton.focus();
+  }
+
+  function closeReview() {
+    modal.classList.remove("rw-modal-open");
+    document.body.style.overflow = "";
+  }
+
+  // ---------- Events ----------
+  previousButton.addEventListener("click", () => {
+    if (currentStep > 0) showStep(currentStep - 1);
+  });
+
+  nextButton.addEventListener("click", () => {
+    if (currentStep < steps.length - 1) {
+      // Validate only the current visible step.
+      const fields = Array.from(steps[currentStep].querySelectorAll(
+        "input, select, textarea"
+      )).filter(field => !field.disabled && !isHiddenField(field));
+
+      for (const field of fields) {
+        if (!field.checkValidity()) {
+          field.reportValidity();
+          field.focus();
+          return;
+        }
+      }
+
+      showStep(currentStep + 1);
+    } else {
+      openReview();
+    }
+  });
+
+  closeButton.addEventListener("click", closeReview);
+
+  modal.addEventListener("click", event => {
+    if (event.target === modal) closeReview();
+  });
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape" && modal.classList.contains("rw-modal-open")) {
+      closeReview();
+    }
+  });
+
+  editButton.addEventListener("click", () => {
+    closeReview();
+    showStep(0);
+    steps[0].scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  confirmButton.addEventListener("click", () => {
+    if (!form.reportValidity()) {
+      closeReview();
+      return;
+    }
+
+    confirmedSubmission = true;
+    closeReview();
+
+    // Let the existing assessment.js submit handler process the form.
+    if (submitCard) submitCard.style.display = "";
+    controls.style.display = "none";
+
+    if (typeof form.requestSubmit === "function") {
+      form.requestSubmit(submitButton);
+    } else {
+      submitButton.click();
+    }
+  });
+
+  form.addEventListener("reset", () => {
+    closeReview();
+    confirmedSubmission = false;
+
+    setTimeout(() => {
+      showStep(0);
+    }, 0);
+  });
+
+  // Populate the date field if it exists.
+  const dateField = form.querySelector("#confirmation_date");
+  if (dateField && !dateField.value) {
+    dateField.value = new Date().toISOString().slice(0, 10);
+  }
+
+  // Start wizard.
+  showStep(0);
+})();
+</script>
 </body>
 </html>
