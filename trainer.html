@@ -10,6 +10,169 @@
   <link rel="stylesheet" href="rawwayfit-app.css">
   <link rel="icon" type="image/png"
     href="https://raw.githubusercontent.com/rawwayfit/RWF-Photos/refs/heads/main/logo/favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+<style>
+  /* RAWWAYFIT light dashboard theme */
+  body.rw-trainer-auth {
+    background: #f8fafc;
+    color: #111827;
+    min-height: 100vh;
+  }
+
+  .rw-trainer-auth .rw-shell {
+    max-width: 1280px;
+    margin-inline: auto;
+    padding-inline: 24px;
+  }
+
+  .rw-trainer-auth .rw-top {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px 22px;
+    margin-top: 20px;
+    box-shadow: 0 4px 16px rgb(15 23 42 / 4%);
+  }
+
+  .rw-trainer-auth .rw-brand-name {
+    color: #b91c1c;
+    font-weight: 900;
+    letter-spacing: 2px;
+  }
+
+  .rw-trainer-auth .rw-hero {
+    padding-block: 38px 24px;
+  }
+
+  .rw-trainer-auth .rw-hero h1,
+  .rw-trainer-auth h2 {
+    color: #111827;
+  }
+
+  .rw-trainer-auth .rw-kicker,
+  .rw-trainer-auth .rw-auth-eyebrow {
+    color: #b91c1c;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+  }
+
+  .rw-trainer-auth .rw-subtitle,
+  .rw-trainer-auth .rw-auth-intro,
+  .rw-trainer-auth .rw-help,
+  .rw-trainer-auth .rw-small {
+    color: #64748b;
+  }
+
+  .rw-trainer-auth .rw-card,
+  .rw-trainer-auth .rw-stat-card {
+    background: #fff;
+    color: #111827;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    box-shadow: 0 5px 20px rgb(15 23 42 / 4%);
+  }
+
+  .rw-trainer-auth .rw-card {
+    padding: 24px;
+    margin-bottom: 22px;
+  }
+
+  .rw-trainer-auth .rw-stat-card {
+    transition: border-color .2s, box-shadow .2s, transform .2s;
+  }
+
+  .rw-trainer-auth .rw-stat-card:hover {
+    border-color: #fca5a5;
+    box-shadow: 0 8px 24px rgb(127 29 29 / 8%);
+    transform: translateY(-2px);
+  }
+
+  .rw-trainer-auth label {
+    color: #374151;
+    font-weight: 600;
+  }
+
+  .rw-trainer-auth input,
+  .rw-trainer-auth select,
+  .rw-trainer-auth textarea {
+    width: 100%;
+    color: #111827;
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+
+  .rw-trainer-auth input:focus,
+  .rw-trainer-auth select:focus,
+  .rw-trainer-auth textarea:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgb(220 38 38 / 12%);
+  }
+
+  .rw-trainer-auth .rw-btn {
+    background: #dc2626;
+    color: #fff;
+    border: 1px solid #dc2626;
+    border-radius: 10px;
+    padding: 11px 17px;
+    font-weight: 700;
+    transition: background .2s, transform .2s;
+  }
+
+  .rw-trainer-auth .rw-btn:hover {
+    background: #b91c1c;
+    transform: translateY(-1px);
+  }
+
+  .rw-trainer-auth .rw-btn.secondary {
+    color: #334155;
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+  }
+
+  .rw-trainer-auth .rw-btn.danger {
+    color: #fff;
+    background: #b91c1c;
+    border-color: #b91c1c;
+  }
+
+  .rw-trainer-auth .rw-message {
+    color: #475569;
+  }
+
+  .rw-trainer-auth .rw-footer {
+    color: #64748b;
+    border-top: 1px solid #e2e8f0;
+    padding-block: 22px;
+  }
+
+  .rw-trainer-auth .rw-hidden {
+    display: none !important;
+  }
+
+  @media (max-width: 640px) {
+    .rw-trainer-auth .rw-shell {
+      padding-inline: 14px;
+    }
+
+    .rw-trainer-auth .rw-top {
+      padding: 14px;
+    }
+
+    .rw-trainer-auth .rw-card {
+      padding: 18px;
+    }
+
+    .rw-trainer-auth .rw-top-actions {
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+  }
+</style>
+
 </head>
 
 <body class="rw-trainer-auth">
