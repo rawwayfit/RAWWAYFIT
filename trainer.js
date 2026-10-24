@@ -1,4 +1,3 @@
-// trainer.js
 (function () {
   "use strict";
 
