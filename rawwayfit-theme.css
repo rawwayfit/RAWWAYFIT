@@ -2186,7 +2186,11 @@
    RAWWAYFIT PROFESSIONAL FOOTER
 ========================================= */
 
-footer {
+/* =========================================
+   RAWWAYFIT HOMEPAGE FOOTER ONLY
+========================================= */
+
+.rw-home-theme footer {
   padding: 40px 28px;
   text-align: center;
   background: #0F172A;
@@ -2194,35 +2198,31 @@ footer {
   border-top: 1px solid #1E293B;
 }
 
-footer .logo {
+.rw-home-theme footer .logo {
   color: #FFFFFF;
-  font-size: 24px;
-  font-weight: 900;
-  letter-spacing: 2px;
 }
 
-footer p {
+.rw-home-theme footer p {
   color: #94A3B8;
   opacity: 1;
-  margin-top: 8px;
 }
 
-footer a {
+.rw-home-theme footer a {
   color: #94A3B8;
   text-decoration: none;
   transition: color 0.25s ease;
 }
 
-footer a:hover,
-footer a:focus-visible {
+.rw-home-theme footer a:hover,
+.rw-home-theme footer a:focus-visible {
   color: #FF3B30;
 }
 
 /* =========================================
-   TRAINER ACCESS LINKS
+   RAWWAYFIT HOMEPAGE - TRAINER ACCESS LINKS
 ========================================= */
 
-.footer-admin-links {
+.rw-home-theme .footer-admin-links {
   margin-top: 24px;
   padding-top: 18px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
@@ -2230,7 +2230,7 @@ footer a:focus-visible {
   font-size: 13px;
 }
 
-.footer-admin-links h4 {
+.rw-home-theme .footer-admin-links h4 {
   margin: 0 0 10px;
   color: #FFFFFF;
   font-size: 12px;
@@ -2239,40 +2239,41 @@ footer a:focus-visible {
   text-transform: uppercase;
 }
 
-.footer-admin-links a {
+.rw-home-theme .footer-admin-links a {
   display: inline-block;
   color: #94A3B8;
   text-decoration: none;
   transition: color 0.25s ease;
 }
 
-.footer-admin-links a:hover,
-.footer-admin-links a:focus-visible {
+.rw-home-theme .footer-admin-links a:hover,
+.rw-home-theme .footer-admin-links a:focus-visible {
   color: #FF3B30;
 }
 
-.footer-admin-links a:focus-visible {
+.rw-home-theme .footer-admin-links a:focus-visible {
   outline: 2px solid #FF3B30;
   outline-offset: 4px;
   border-radius: 3px;
 }
 
-.footer-separator {
+.rw-home-theme .footer-separator {
   margin: 0 10px;
   color: #64748B;
 }
 
+/* Mobile responsive styling */
 @media (max-width: 480px) {
-  .footer-admin-links {
+  .rw-home-theme .footer-admin-links {
     font-size: 12px;
   }
 
-  .footer-admin-links h4 {
+  .rw-home-theme .footer-admin-links h4 {
     font-size: 11px;
     letter-spacing: 1.2px;
   }
 
-  .footer-separator {
+  .rw-home-theme .footer-separator {
     margin: 0 6px;
   }
 }
