@@ -1,3 +1,4 @@
+// trainer.js
 (function () {
   "use strict";
 
@@ -16,6 +17,7 @@
   let clientStatusFilter = "all";
   let passwordRecoveryActive = false;
   let lastClientTrigger = null;
+  let authorizationCheckInProgress = false;
 
   const clientPageSize = 3;
   const statuses = ["Lead", "Active", "On hold", "Completed"];
@@ -32,57 +34,37 @@
   const clientPagination = $("clientPagination");
   const mobileLayout = window.matchMedia("(max-width: 700px)");
 
+  // --------------------------------------------------
+  // MESSAGES AND BUTTONS
+  // --------------------------------------------------
+
   function msg(element, text, kind) {
     if (!element) return;
+
     element.textContent = text || "";
     element.classList.remove("success", "error");
+
     if (kind) element.classList.add(kind);
   }
 
   function setButtonBusy(button, busy, busyText, normalText) {
     if (!button) return;
+
     button.disabled = busy;
     button.textContent = busy ? busyText : normalText;
   }
 
-  function showDashboard(isLoggedIn) {
-    loginPanel.classList.toggle("rw-hidden", isLoggedIn);
-    dashboardPanel.classList.toggle("rw-hidden", !isLoggedIn);
-
-    const sessionActions = $("trainerSessionActions");
-    const refreshButton = $("refreshAssessmentsButton");
-    const signOutButton = $("signOutButton");
-
-    if (sessionActions) {
-      sessionActions.classList.toggle("rw-hidden", !isLoggedIn);
-    }
-    if (refreshButton) {
-      refreshButton.classList.toggle("rw-hidden", !isLoggedIn);
-    }
-    if (signOutButton) {
-      signOutButton.classList.toggle("rw-hidden", !isLoggedIn);
-    }
-  }
-
-  function showPasswordRecovery(active) {
-    passwordRecoveryActive = active;
-
-    passwordRecoveryPanel.classList.toggle("rw-hidden", !active);
-    loginPanel.classList.toggle("rw-hidden", active);
-    dashboardPanel.classList.add("rw-hidden");
-
-    ["trainerSessionActions", "refreshAssessmentsButton", "signOutButton"]
-      .forEach((id) => {
-        const element = $(id);
-        if (element) element.classList.add("rw-hidden");
-      });
-  }
+  // --------------------------------------------------
+  // SUPABASE CLIENT
+  // --------------------------------------------------
 
   function getClient() {
     if (supabaseClient) return supabaseClient;
 
     if (!window.supabase || !window.supabase.createClient) {
-      throw new Error("The Supabase library did not load. Refresh the page.");
+      throw new Error(
+        "The Supabase library did not load. Refresh the page."
+      );
     }
 
     if (!cfg.supabaseUrl || !cfg.supabasePublishableKey) {
@@ -105,6 +87,168 @@
 
     return supabaseClient;
   }
+
+  // --------------------------------------------------
+  // TRAINER AUTHORIZATION
+  // --------------------------------------------------
+
+  async function isAuthorizedTrainer() {
+    const client = getClient();
+
+    const {
+      data: { user },
+      error: userError
+    } = await client.auth.getUser();
+
+    if (userError) {
+      console.error("Could not retrieve authenticated user:", userError);
+      throw new Error(
+        "Unable to verify your account. Please try again."
+      );
+    }
+
+    if (!user) return false;
+
+    const { data, error } = await client
+      .from("trainer_users")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Trainer authorization check failed:", error);
+      throw new Error(
+        "Unable to verify trainer access. Check your connection and Supabase permissions."
+      );
+    }
+
+    return Boolean(data && data.user_id === user.id);
+  }
+
+  // --------------------------------------------------
+  // PANEL VISIBILITY
+  // --------------------------------------------------
+
+  function showDashboard(isLoggedIn) {
+    if (loginPanel) {
+      loginPanel.classList.toggle("rw-hidden", isLoggedIn);
+    }
+
+    if (dashboardPanel) {
+      dashboardPanel.classList.toggle("rw-hidden", !isLoggedIn);
+    }
+
+    const sessionActions = $("trainerSessionActions");
+    const refreshButton = $("refreshAssessmentsButton");
+    const signOutButton = $("signOutButton");
+
+    if (sessionActions) {
+      sessionActions.classList.toggle("rw-hidden", !isLoggedIn);
+    }
+
+    if (refreshButton) {
+      refreshButton.classList.toggle("rw-hidden", !isLoggedIn);
+    }
+
+    if (signOutButton) {
+      signOutButton.classList.toggle("rw-hidden", !isLoggedIn);
+    }
+  }
+
+  function showPasswordRecovery(active) {
+    passwordRecoveryActive = active;
+
+    if (passwordRecoveryPanel) {
+      passwordRecoveryPanel.classList.toggle("rw-hidden", !active);
+    }
+
+    if (loginPanel) {
+      loginPanel.classList.toggle("rw-hidden", active);
+    }
+
+    if (dashboardPanel) {
+      dashboardPanel.classList.add("rw-hidden");
+    }
+
+    [
+      "trainerSessionActions",
+      "refreshAssessmentsButton",
+      "signOutButton"
+    ].forEach((id) => {
+      const element = $(id);
+      if (element) element.classList.add("rw-hidden");
+    });
+  }
+
+  function clearDashboardData() {
+    allAssessments = [];
+    selected = null;
+    clientPage = 0;
+
+    if (clientRows) clientRows.innerHTML = "";
+
+    if ($("totalClientCount")) {
+      $("totalClientCount").textContent = "0";
+    }
+
+    if ($("activeClientCount")) {
+      $("activeClientCount").textContent = "0";
+    }
+
+    if ($("onHoldClientCount")) {
+      $("onHoldClientCount").textContent = "0";
+    }
+
+    if ($("completedClientCount")) {
+      $("completedClientCount").textContent = "0";
+    }
+
+    if ($("clientCount")) {
+      $("clientCount").textContent = "0 records";
+    }
+
+    if ($("clientPagination")) {
+      $("clientPagination").classList.add("rw-hidden");
+    }
+
+    closeAssessment();
+  }
+
+  function showAccessDenied(show, message = "") {
+    const deniedPanel = $("accessDenied");
+
+    if (deniedPanel) {
+      deniedPanel.classList.toggle("rw-hidden", !show);
+    }
+
+    if (show) {
+      clearDashboardData();
+
+      if (loginPanel) loginPanel.classList.add("rw-hidden");
+      if (dashboardPanel) dashboardPanel.classList.add("rw-hidden");
+
+      if (passwordRecoveryPanel) {
+        passwordRecoveryPanel.classList.add("rw-hidden");
+      }
+
+      [
+        "trainerSessionActions",
+        "refreshAssessmentsButton",
+        "signOutButton"
+      ].forEach((id) => {
+        const element = $(id);
+        if (element) element.classList.add("rw-hidden");
+      });
+
+      msg($("accessDeniedMessage"), message, message ? "error" : "");
+    } else {
+      msg($("accessDeniedMessage"), "", "");
+    }
+  }
+
+  // --------------------------------------------------
+  // UTILITIES
+  // --------------------------------------------------
 
   function escapeHtml(value) {
     return String(value == null ? "" : value).replace(/[&<>"']/g, (char) => ({
@@ -159,11 +303,16 @@
     return String(value);
   }
 
+  // --------------------------------------------------
+  // DASHBOARD STYLES
+  // --------------------------------------------------
+
   function addStyles() {
     if ($("rwDashboardMobileStyles")) return;
 
     const style = document.createElement("style");
     style.id = "rwDashboardMobileStyles";
+
     style.textContent = `
       .rw-status-badge {
         display:inline-flex; align-items:center; border-radius:999px;
@@ -174,53 +323,85 @@
       .rw-status-badge.on-hold { background:#fef3c7; color:#92400e; }
       .rw-status-badge.completed { background:#dbeafe; color:#1e40af; }
       .rw-status-badge.lead { background:#f3f4f6; color:#374151; }
+
       .rw-client-button {
         display:block; width:100%; text-align:left; cursor:pointer;
         border:1px solid #dce4f2; border-radius:12px; padding:14px;
         background:#fff; color:#202938;
       }
+
       .rw-client-button:hover, .rw-client-button:focus-visible {
         border-color:#be192d; outline:2px solid #be192d;
         outline-offset:2px;
       }
-      .rw-client-name { font-weight:750; font-size:16px; margin-bottom:6px; }
-      .rw-client-meta { font-size:13px; line-height:1.6; color:#526071; }
-      .rw-client-grid { display:grid; grid-template-columns:1fr; gap:10px; }
+
+      .rw-client-name {
+        font-weight:750; font-size:16px; margin-bottom:6px;
+      }
+
+      .rw-client-meta {
+        font-size:13px; line-height:1.6; color:#526071;
+      }
+
+      .rw-client-grid {
+        display:grid; grid-template-columns:1fr; gap:10px;
+      }
+
       .rw-assessment-section {
         border:1px solid #dce4f2; border-radius:10px;
         margin:12px 0; overflow:hidden;
       }
+
       .rw-assessment-section summary {
         cursor:pointer; padding:13px; font-weight:700;
         background:#f5f7fb; color:#202938;
       }
+
       .rw-detail-content { padding:12px; }
+
       .rw-detail-row {
         display:grid; grid-template-columns:minmax(120px, 35%) 1fr;
         gap:12px; padding:9px 0; border-bottom:1px solid #edf0f5;
         overflow-wrap:anywhere;
       }
+
       .rw-detail-row:last-child { border-bottom:0; }
       .rw-detail-label { font-weight:650; color:#465267; }
       .rw-detail-value { white-space:pre-wrap; color:#202938; }
+
       .rw-client-pagination {
         display:flex; align-items:center; justify-content:center;
         gap:12px; flex-wrap:wrap; margin-top:16px;
       }
+
       .rw-hidden { display:none !important; }
+
       @media(max-width:700px) {
-        .rw-detail-row { grid-template-columns:1fr; gap:4px; }
-        .rw-detail-header-actions { display:flex; flex-wrap:wrap; gap:8px; }
+        .rw-detail-row {
+          grid-template-columns:1fr; gap:4px;
+        }
+
+        .rw-detail-header-actions {
+          display:flex; flex-wrap:wrap; gap:8px;
+        }
+
         #detailPanel { min-width:0; }
+
         body.rw-detail-open { overflow:hidden; }
+
         body.rw-detail-open #detailPanel {
           position:fixed; inset:8px; z-index:9999; overflow:auto;
           background:#fff; margin:0; max-height:calc(100dvh - 16px);
         }
       }
     `;
+
     document.head.appendChild(style);
   }
+
+  // --------------------------------------------------
+  // SEARCH, FILTER AND PAGINATION
+  // --------------------------------------------------
 
   function setStatusFilter(status) {
     clientStatusFilter = status;
@@ -235,7 +416,7 @@
   }
 
   function getFilteredAssessments() {
-    const query = searchInput.value.trim().toLowerCase();
+    const query = searchInput ? searchInput.value.trim().toLowerCase() : "";
 
     return allAssessments.filter((record) => {
       const status = record.training_status || "Lead";
@@ -259,6 +440,8 @@
   function renderRows() {
     addStyles();
 
+    if (!clientRows) return;
+
     const filtered = getFilteredAssessments();
 
     const countByStatus = (status) =>
@@ -266,21 +449,35 @@
         (record) => (record.training_status || "Lead") === status
       ).length;
 
-    $("totalClientCount").textContent = String(allAssessments.length);
-    $("activeClientCount").textContent = String(countByStatus("Active"));
-    $("onHoldClientCount").textContent = String(countByStatus("On hold"));
-    $("completedClientCount").textContent = String(countByStatus("Completed"));
+    if ($("totalClientCount")) {
+      $("totalClientCount").textContent = String(allAssessments.length);
+    }
+
+    if ($("activeClientCount")) {
+      $("activeClientCount").textContent = String(countByStatus("Active"));
+    }
+
+    if ($("onHoldClientCount")) {
+      $("onHoldClientCount").textContent = String(countByStatus("On hold"));
+    }
+
+    if ($("completedClientCount")) {
+      $("completedClientCount").textContent = String(countByStatus("Completed"));
+    }
 
     const pageCount = Math.ceil(filtered.length / clientPageSize);
+
     clientPage = Math.min(clientPage, Math.max(0, pageCount - 1));
 
     const first = clientPage * clientPageSize;
     const visible = filtered.slice(first, first + clientPageSize);
 
     const clientCount = $("clientCount");
+
     if (clientCount) {
       const firstVisible = filtered.length ? first + 1 : 0;
       const lastVisible = Math.min(first + clientPageSize, filtered.length);
+
       const label = clientStatusFilter === "all"
         ? "all statuses"
         : clientStatusFilter;
@@ -290,12 +487,23 @@
         `${firstVisible}–${lastVisible}`;
     }
 
-    clientPagination.classList.toggle("rw-hidden", pageCount <= 1);
-    $("previousClients").disabled = clientPage === 0;
-    $("nextClients").disabled =
-      pageCount === 0 || clientPage >= pageCount - 1;
-    $("clientPageStatus").textContent =
-      pageCount ? `Page ${clientPage + 1} of ${pageCount}` : "No pages";
+    if (clientPagination) {
+      clientPagination.classList.toggle("rw-hidden", pageCount <= 1);
+    }
+
+    if ($("previousClients")) {
+      $("previousClients").disabled = clientPage === 0;
+    }
+
+    if ($("nextClients")) {
+      $("nextClients").disabled =
+        pageCount === 0 || clientPage >= pageCount - 1;
+    }
+
+    if ($("clientPageStatus")) {
+      $("clientPageStatus").textContent =
+        pageCount ? `Page ${clientPage + 1} of ${pageCount}` : "No pages";
+    }
 
     if (!filtered.length) {
       const emptyText = allAssessments.length
@@ -304,6 +512,7 @@
 
       clientRows.innerHTML =
         `<p class="rw-small">${escapeHtml(emptyText)}</p>`;
+
       return;
     }
 
@@ -331,14 +540,32 @@
     }).join("");
   }
 
+  // --------------------------------------------------
+  // LOAD CLIENT ASSESSMENTS
+  // --------------------------------------------------
+
   async function loadAssessments() {
     const clientCount = $("clientCount");
+
     msg($("listMessage"), "", "");
 
-    if (clientCount) clientCount.textContent = "Loading client records…";
-    clientRows.innerHTML = '<p class="rw-small">Loading clients…</p>';
+    if (clientCount) {
+      clientCount.textContent = "Loading client records…";
+    }
+
+    if (clientRows) {
+      clientRows.innerHTML = '<p class="rw-small">Loading clients…</p>';
+    }
 
     try {
+      // Recheck authorization before retrieving client records.
+      const authorized = await isAuthorizedTrainer();
+
+      if (!authorized) {
+        showAccessDenied(true);
+        return;
+      }
+
       const client = getClient();
 
       const { data, error } = await client
@@ -359,18 +586,27 @@
       );
     } catch (error) {
       console.error("Load assessments failed:", error);
+
       allAssessments = [];
       renderRows();
 
-      if (clientCount) clientCount.textContent = "Could not load client records.";
+      if (clientCount) {
+        clientCount.textContent = "Could not load client records.";
+      }
 
       msg(
         $("listMessage"),
-        `Could not load assessments. ${error.message || "Check Supabase access policies."}`,
+        `Could not load assessments. ${
+          error.message || "Check Supabase access policies."
+        }`,
         "error"
       );
     }
   }
+
+  // --------------------------------------------------
+  // ASSESSMENT DETAIL RENDERING
+  // --------------------------------------------------
 
   function detailItem(label, value) {
     return `
@@ -399,6 +635,7 @@
     }
 
     const sections = [];
+
     const sectionAliases = {
       personal_details: "PERSONAL DETAILS",
       body_measurements: "BODY MEASUREMENTS",
@@ -434,10 +671,37 @@
       assessmentSection("Assessment answers", "<p>No answers provided.</p>");
   }
 
-  function openAssessment(id) {
-    const record = allAssessments.find((item) => String(item.id) === String(id));
+  async function openAssessment(id) {
+    // Prevent opening records if authorization has not been verified.
+    if (authorizationCheckInProgress) return;
+
+    try {
+      const authorized = await isAuthorizedTrainer();
+
+      if (!authorized) {
+        showAccessDenied(true);
+        return;
+      }
+    } catch (error) {
+      console.error("Assessment access check failed:", error);
+      msg(
+        $("listMessage"),
+        "Unable to verify trainer access. Please try again.",
+        "error"
+      );
+      return;
+    }
+
+    const record = allAssessments.find(
+      (item) => String(item.id) === String(id)
+    );
+
     if (!record) {
-      msg($("listMessage"), "That assessment could not be found. Refresh the list.", "error");
+      msg(
+        $("listMessage"),
+        "That assessment could not be found. Refresh the list.",
+        "error"
+      );
       return;
     }
 
@@ -459,17 +723,21 @@
     assessmentDetails.innerHTML = html;
 
     $("selectedAssessmentId").value = record.id;
+
     $("trainingStatus").value = statuses.includes(record.training_status)
       ? record.training_status
       : "Lead";
+
     $("trainerSummary").value = record.trainer_summary || "";
     $("initialPlan").value = record.initial_plan || "";
     $("nextReviewDate").value = record.next_review_date || "";
 
     msg($("notesMessage"), "", "");
+
     detailPanel.classList.remove("rw-hidden");
 
     const isMobile = mobileLayout.matches;
+
     detailPanel.setAttribute("aria-modal", String(isMobile));
     document.body.classList.toggle("rw-detail-open", isMobile);
 
@@ -478,11 +746,16 @@
     if (isMobile) {
       $("closeDetail").focus();
     } else {
-      detailPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+      detailPanel.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
     }
   }
 
   function closeAssessment() {
+    if (!detailPanel) return;
+
     detailPanel.classList.add("rw-hidden");
     detailPanel.setAttribute("aria-modal", "false");
     document.body.classList.remove("rw-detail-open");
@@ -504,6 +777,8 @@
     const password = $("password").value;
 
     msg($("loginMessage"), "", "");
+    showAccessDenied(false);
+
     setButtonBusy(button, true, "Signing in…", "Sign in");
 
     try {
@@ -515,22 +790,33 @@
       });
 
       if (error) throw error;
-      if (!data.session) {
-        throw new Error("Sign-in did not create a session. Please try again.");
+
+      if (!data.session || !data.user) {
+        throw new Error(
+          "Sign-in did not create a session. Please try again."
+        );
       }
 
-      showPasswordRecovery(false);
-      showDashboard(true);
       $("password").value = "";
+      showPasswordRecovery(false);
 
+      const authorized = await isAuthorizedTrainer();
+
+      if (!authorized) {
+        showAccessDenied(true);
+        return;
+      }
+
+      showDashboard(true);
       await loadAssessments();
     } catch (error) {
-      console.error("Trainer sign-in failed:", error);
+      console.error("Trainer sign-in or authorization failed:", error);
+
       showDashboard(false);
 
       msg(
         $("loginMessage"),
-        error.message || "Sign-in failed. Check your email and password.",
+        error.message || "Sign-in failed. Please try again.",
         "error"
       );
     } finally {
@@ -546,12 +832,17 @@
     const email = $("email").value.trim();
 
     if (!email) {
-      msg($("loginMessage"), "Enter your trainer email address first.", "error");
+      msg(
+        $("loginMessage"),
+        "Enter your trainer email address first.",
+        "error"
+      );
       $("email").focus();
       return;
     }
 
     const button = $("forgotPasswordButton");
+
     setButtonBusy(button, true, "Sending…", "Forgot password?");
 
     try {
@@ -570,6 +861,7 @@
       );
     } catch (error) {
       console.error("Password reset request failed:", error);
+
       msg(
         $("loginMessage"),
         error.message || "Unable to start password reset. Please try again.",
@@ -597,7 +889,11 @@
     }
 
     if (password !== confirmPassword) {
-      msg($("passwordRecoveryMessage"), "The passwords do not match.", "error");
+      msg(
+        $("passwordRecoveryMessage"),
+        "The passwords do not match.",
+        "error"
+      );
       return;
     }
 
@@ -620,9 +916,11 @@
       );
     } catch (error) {
       console.error("Password update failed:", error);
+
       msg(
         $("passwordRecoveryMessage"),
-        error.message || "Could not update your password. Request a new reset email.",
+        error.message ||
+          "Could not update your password. Request a new reset email.",
         "error"
       );
     } finally {
@@ -643,6 +941,7 @@
     }
 
     const button = $("saveNotesButton");
+
     setButtonBusy(button, true, "Saving…", "Save trainer notes");
     msg($("notesMessage"), "", "");
 
@@ -654,6 +953,13 @@
     };
 
     try {
+      const authorized = await isAuthorizedTrainer();
+
+      if (!authorized) {
+        showAccessDenied(true);
+        return;
+      }
+
       const client = getClient();
 
       const { data, error } = await client
@@ -664,6 +970,7 @@
         .maybeSingle();
 
       if (error) throw error;
+
       if (!data) {
         throw new Error(
           "No record was updated. Check your Supabase update policy and trainer permissions."
@@ -671,14 +978,21 @@
       }
 
       selected = data;
+
       allAssessments = allAssessments.map((item) =>
-        item.id === data.id ? data : item
+        String(item.id) === String(data.id) ? data : item
       );
 
       renderRows();
-      msg($("notesMessage"), "Trainer notes saved successfully.", "success");
+
+      msg(
+        $("notesMessage"),
+        "Trainer notes saved successfully.",
+        "success"
+      );
     } catch (error) {
       console.error("Saving trainer notes failed:", error);
+
       msg(
         $("notesMessage"),
         `Could not save trainer notes. ${error.message || ""}`,
@@ -706,9 +1020,17 @@
     }
 
     const button = $("deleteAssessmentButton");
+
     setButtonBusy(button, true, "Deleting…", "Delete assessment");
 
     try {
+      const authorized = await isAuthorizedTrainer();
+
+      if (!authorized) {
+        showAccessDenied(true);
+        return;
+      }
+
       const client = getClient();
 
       const { data, error } = await client
@@ -731,13 +1053,19 @@
       );
 
       selected = null;
+
       closeAssessment();
       renderRows();
 
       msg($("listMessage"), `${code} was permanently deleted.`, "success");
-      $("listMessage").scrollIntoView({ behavior: "smooth", block: "start" });
+
+      $("listMessage").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
     } catch (error) {
       console.error("Delete assessment failed:", error);
+
       msg(
         $("notesMessage"),
         `Could not delete this assessment. ${error.message || ""}`,
@@ -765,6 +1093,7 @@
 
   $("previousClients").addEventListener("click", function () {
     if (clientPage <= 0) return;
+
     clientPage--;
     renderRows();
   });
@@ -773,12 +1102,14 @@
     if ((clientPage + 1) * clientPageSize >= getFilteredAssessments().length) {
       return;
     }
+
     clientPage++;
     renderRows();
   });
 
   clientRows.addEventListener("click", function (event) {
     const button = event.target.closest("[data-id]");
+
     if (!button) return;
 
     lastClientTrigger = button;
@@ -787,30 +1118,92 @@
 
   $("closeDetail").addEventListener("click", closeAssessment);
 
-  $("refreshAssessmentsButton").addEventListener("click", loadAssessments);
+  $("refreshAssessmentsButton").addEventListener("click", async function () {
+    try {
+      const authorized = await isAuthorizedTrainer();
+
+      if (!authorized) {
+        showAccessDenied(true);
+        return;
+      }
+
+      await loadAssessments();
+    } catch (error) {
+      console.error("Refresh authorization failed:", error);
+
+      msg(
+        $("listMessage"),
+        error.message || "Unable to verify trainer access.",
+        "error"
+      );
+    }
+  });
 
   $("signOutButton").addEventListener("click", async function () {
     try {
       const client = getClient();
       const { error } = await client.auth.signOut();
+
       if (error) throw error;
 
-      allAssessments = [];
-      selected = null;
-      closeAssessment();
-      renderRows();
+      clearDashboardData();
+      showAccessDenied(false);
+      showPasswordRecovery(false);
       showDashboard(false);
+
       msg($("loginMessage"), "You have signed out.", "success");
     } catch (error) {
       console.error("Sign out failed:", error);
-      msg($("loginMessage"), error.message || "Could not sign out.", "error");
+
+      msg(
+        $("loginMessage"),
+        error.message || "Could not sign out.",
+        "error"
+      );
     }
   });
 
+  const accessDeniedSignOut = $("accessDeniedSignOut");
+
+  if (accessDeniedSignOut) {
+    accessDeniedSignOut.addEventListener("click", async function () {
+      accessDeniedSignOut.disabled = true;
+
+      try {
+        const client = getClient();
+        const { error } = await client.auth.signOut();
+
+        if (error) throw error;
+
+        clearDashboardData();
+        showAccessDenied(false);
+        showPasswordRecovery(false);
+        showDashboard(false);
+
+        msg($("loginMessage"), "You have signed out.", "success");
+      } catch (error) {
+        console.error("Access-denied sign-out failed:", error);
+
+        msg(
+          $("accessDeniedMessage"),
+          error.message || "Could not sign out. Please try again.",
+          "error"
+        );
+      } finally {
+        accessDeniedSignOut.disabled = false;
+      }
+    });
+  }
+
   mobileLayout.addEventListener("change", function (event) {
     const isOpen = !detailPanel.classList.contains("rw-hidden");
+
     detailPanel.setAttribute("aria-modal", String(event.matches && isOpen));
-    document.body.classList.toggle("rw-detail-open", event.matches && isOpen);
+
+    document.body.classList.toggle(
+      "rw-detail-open",
+      event.matches && isOpen
+    );
 
     if (event.matches && isOpen) $("closeDetail").focus();
   });
@@ -865,6 +1258,7 @@
     }
 
     const { jsPDF } = window.jspdf;
+
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
@@ -875,6 +1269,7 @@
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 15;
     const contentWidth = pageWidth - margin * 2;
+
     let y = 20;
 
     function checkPage(height = 8) {
@@ -899,8 +1294,11 @@
       );
 
       const lineHeight = size * 0.45 + 1.5;
+
       checkPage(lines.length * lineHeight + gap);
+
       doc.text(lines, margin + indent, y);
+
       y += lines.length * lineHeight + gap;
     }
 
@@ -914,6 +1312,7 @@
       doc.setTextColor(255, 255, 255);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10.5);
+
       doc.text(title, margin + 3, y + 1.5);
 
       doc.setTextColor(30, 30, 30);
@@ -931,6 +1330,7 @@
       if (object && typeof object === "object" && !Array.isArray(object)) {
         Object.entries(object).forEach(([key, value]) => {
           const label = key.replace(/[_-]+/g, " ");
+
           if (value && typeof value === "object") {
             writeText(`${prefix}${label}:`);
             writeObject(value, `${prefix}${label} / `);
@@ -949,6 +1349,7 @@
 
     doc.setFillColor(190, 25, 45);
     doc.rect(0, 0, pageWidth, 34, "F");
+
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
@@ -970,7 +1371,10 @@
     writeText(`PDF generated: ${new Date().toLocaleDateString("en-IN")}`);
 
     writeSection("ASSESSMENT ANSWERS");
-    writeObject(selected.assessment_data || { note: "No answers provided." });
+
+    writeObject(
+      selected.assessment_data || { note: "No answers provided." }
+    );
 
     writeSection("TRAINER REVIEW");
     writeText(`Training status: ${$("trainingStatus").value || "Lead"}`);
@@ -991,6 +1395,7 @@
         margin,
         pageHeight - 7
       );
+
       doc.text(
         `Page ${page} of ${pageCount}`,
         pageWidth - margin,
@@ -1017,42 +1422,62 @@
     try {
       const client = getClient();
 
+      // Hide protected content before checking the current session.
+      showAccessDenied(false);
+      showDashboard(false);
+      showPasswordRecovery(false);
+
       const { data, error } = await client.auth.getSession();
+
       if (error) throw error;
 
       const session = data && data.session;
 
       if (session) {
-        showPasswordRecovery(false);
-        showDashboard(true);
-        await loadAssessments();
+        authorizationCheckInProgress = true;
+
+        try {
+          const authorized = await isAuthorizedTrainer();
+
+          if (authorized) {
+            showAccessDenied(false);
+            showPasswordRecovery(false);
+            showDashboard(true);
+            await loadAssessments();
+          } else {
+            showAccessDenied(true);
+          }
+        } finally {
+          authorizationCheckInProgress = false;
+        }
       } else {
         showDashboard(false);
       }
 
-      client.auth.onAuthStateChange((event, sessionNow) => {
+      client.auth.onAuthStateChange((event) => {
         if (event === "PASSWORD_RECOVERY") {
+          showAccessDenied(false);
           showPasswordRecovery(true);
           return;
         }
 
         if (event === "SIGNED_OUT") {
-          allAssessments = [];
-          selected = null;
+          clearDashboardData();
+          showAccessDenied(false);
+          showPasswordRecovery(false);
           showDashboard(false);
-          renderRows();
-          return;
         }
 
-        if (sessionNow && !passwordRecoveryActive) {
-          showDashboard(true);
-          // Avoid querying Supabase inside this auth callback.
-          // Login and initial page load handle fetching assessments.
-        }
+        // SIGNED_IN and TOKEN_REFRESHED deliberately do not expose
+        // the dashboard. Login and initialization verify membership.
       });
     } catch (error) {
       console.error("Trainer dashboard initialization failed:", error);
+
+      clearDashboardData();
+      showAccessDenied(false);
       showDashboard(false);
+
       msg(
         $("loginMessage"),
         error.message || "Could not initialize the trainer dashboard.",
@@ -1061,7 +1486,12 @@
     }
   }
 
+  // --------------------------------------------------
+  // START
+  // --------------------------------------------------
+
   addStyles();
+  showAccessDenied(false);
   showDashboard(false);
   initialize();
 })();
