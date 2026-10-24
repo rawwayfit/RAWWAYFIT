@@ -2181,3 +2181,98 @@
 .rw-home-theme #certifications .certificate-carousel > .carousel-button:hover:not(:disabled) {
   transform: translateY(calc(-50% - 2px));
 }
+
+/* =========================================
+   RAWWAYFIT PROFESSIONAL FOOTER
+========================================= */
+
+footer {
+  padding: 40px 28px;
+  text-align: center;
+  background: #0F172A;
+  color: #FFFFFF;
+  border-top: 1px solid #1E293B;
+}
+
+footer .logo {
+  color: #FFFFFF;
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+
+footer p {
+  color: #94A3B8;
+  opacity: 1;
+  margin-top: 8px;
+}
+
+footer a {
+  color: #94A3B8;
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+footer a:hover,
+footer a:focus-visible {
+  color: #FF3B30;
+}
+
+/* =========================================
+   TRAINER ACCESS LINKS
+========================================= */
+
+.footer-admin-links {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  text-align: center;
+  font-size: 13px;
+}
+
+.footer-admin-links h4 {
+  margin: 0 0 10px;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.footer-admin-links a {
+  display: inline-block;
+  color: #94A3B8;
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.footer-admin-links a:hover,
+.footer-admin-links a:focus-visible {
+  color: #FF3B30;
+}
+
+.footer-admin-links a:focus-visible {
+  outline: 2px solid #FF3B30;
+  outline-offset: 4px;
+  border-radius: 3px;
+}
+
+.footer-separator {
+  margin: 0 10px;
+  color: #64748B;
+}
+
+@media (max-width: 480px) {
+  .footer-admin-links {
+    font-size: 12px;
+  }
+
+  .footer-admin-links h4 {
+    font-size: 11px;
+    letter-spacing: 1.2px;
+  }
+
+  .footer-separator {
+    margin: 0 6px;
+  }
+}
