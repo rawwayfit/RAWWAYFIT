@@ -171,6 +171,179 @@
       gap: 10px;
     }
   }
+
+  /* RAWWAYFIT Trainer – Fitness Illustration Theme */
+
+body {
+    background:
+        radial-gradient(
+            circle at 10% 15%,
+            rgba(220, 38, 38, 0.07),
+            transparent 30%
+        ),
+        radial-gradient(
+            circle at 90% 85%,
+            rgba(31, 41, 55, 0.06),
+            transparent 32%
+        ),
+        #f8fafc;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* Decorative fitness-inspired geometric shapes */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+    border: 2px solid rgba(220, 38, 38, 0.10);
+    border-radius: 50%;
+}
+
+body::before {
+    width: 300px;
+    height: 300px;
+    top: -100px;
+    right: -90px;
+    box-shadow:
+        0 0 0 35px rgba(220, 38, 38, 0.025),
+        0 0 0 70px rgba(220, 38, 38, 0.02);
+}
+
+body::after {
+    width: 220px;
+    height: 220px;
+    bottom: -80px;
+    left: -70px;
+    box-shadow:
+        0 0 0 30px rgba(31, 41, 55, 0.025),
+        0 0 0 60px rgba(31, 41, 55, 0.02);
+}
+
+/* Keep login and dashboard content above decorations */
+body > * {
+    position: relative;
+    z-index: 1;
+}
+
+
+/* RAW WAY FIT — Compact, premium trainer login */
+
+#loginPanel {
+  max-width: 390px !important;
+  width: 100% !important;
+  margin: 0 auto 36px !important;
+  padding: 28px 30px !important;
+  background: rgba(255, 255, 255, 0.97) !important;
+  border: 1px solid #e5e7eb !important;
+  border-top: 4px solid #dc2626 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 16px 45px rgba(15, 23, 42, 0.09) !important;
+}
+
+/* Small red portal label */
+#loginPanel .rw-auth-eyebrow {
+  display: inline-block;
+  margin: 0 0 10px !important;
+  padding: 6px 10px;
+  background: #fef2f2;
+  border: 1px solid #fee2e2;
+  border-radius: 20px;
+  color: #b91c1c !important;
+  font-size: 10px !important;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+#loginPanel h2 {
+  margin: 0 0 8px !important;
+  color: #111827 !important;
+  font-size: 25px !important;
+  font-weight: 850 !important;
+  letter-spacing: -0.8px;
+}
+
+#loginPanel .rw-auth-intro {
+  margin: 0 0 22px !important;
+  color: #6b7280 !important;
+  font-size: 13px !important;
+  line-height: 1.6;
+}
+
+#loginPanel .rw-grid {
+  gap: 16px !important;
+}
+
+#loginPanel .rw-field {
+  min-width: 0;
+}
+
+#loginPanel label {
+  display: block;
+  margin-bottom: 7px !important;
+  color: #374151 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+#loginPanel input {
+  min-height: 45px;
+  padding: 11px 13px !important;
+  background: #f9fafb !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 10px !important;
+  font-size: 14px !important;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+#loginPanel input:focus {
+  background: #fff !important;
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.10) !important;
+}
+
+#loginPanel #loginButton {
+  width: 100%;
+  min-height: 46px;
+  margin-top: 3px;
+  border-radius: 10px !important;
+  background: #dc2626 !important;
+  color: #fff !important;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: 0 5px 12px rgba(220, 38, 38, 0.18);
+  transition: background .2s, transform .2s, box-shadow .2s;
+}
+
+#loginPanel #loginButton:hover {
+  background: #b91c1c !important;
+  box-shadow: 0 7px 16px rgba(220, 38, 38, 0.23);
+  transform: translateY(-1px);
+}
+
+#loginPanel #loginMessage {
+  margin: 10px 0 0;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+  #loginPanel {
+    max-width: 100% !important;
+    padding: 24px 20px !important;
+    margin-bottom: 26px !important;
+    border-radius: 15px !important;
+  }
+
+  #loginPanel h2 {
+    font-size: 23px !important;
+  }
+}
+
 </style>
 
 </head>

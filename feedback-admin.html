@@ -1,2839 +1,1238 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Feedback Admin | RAWWAYFIT</title>
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <link rel="icon" type="image/png"
+    href="https://raw.githubusercontent.com/rawwayfit/RWF-Photos/refs/heads/main/logo/favicon.png">
 
-  <title>
-    Feedback Admin | RAWWAYFIT 
-  </title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <link rel="icon" type="image/png" href="https://wwsiwomvwfqrjufgyfgp.supabase.co/storage/v1/object/public/images/favicon-img/favicon-03.png">
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
-  
   <style>
-
-    /* =====================================================
-       RESET
-    ===================================================== */
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --bg: #090909;
+      --panel: #121212;
+      --panel-2: #181818;
+      --border: #292929;
+      --text: #f7f7f7;
+      --muted: #a1a1aa;
+      --red: #ef233c;
+      --red-dark: #c9182b;
+      --green: #22c55e;
+      --yellow: #facc15;
+      --blue: #60a5fa;
+      --radius: 16px;
     }
 
+    * { box-sizing: border-box; }
+
+    [hidden] { display: none !important; }
 
     body {
-      font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-      background: #080808;
-
-      color: #ffffff;
-
-      line-height: 1.6;
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(239,35,60,.12), transparent 42%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      line-height: 1.5;
     }
 
-
-    button,
-    input {
-      font: inherit;
-    }
-
-
-    /* =====================================================
-       CONTAINER
-    ===================================================== */
-
-    .container {
-      width: min(1200px, 92%);
-
-      margin: 0 auto;
-    }
-
-
-    /* =====================================================
-       HEADER
-    ===================================================== */
-
-    .admin-header {
-      border-bottom: 1px solid #252525;
-
-      background: #0d0d0d;
-
-      position: sticky;
-
-      top: 0;
-
-      z-index: 100;
-    }
-
-
-    .header-inner {
-      min-height: 80px;
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: space-between;
-
-      gap: 20px;
-    }
-
-
-    .logo {
-      font-size: 24px;
-
-      font-weight: 900;
-
-      letter-spacing: 3px;
-    }
-
-
-    .logo span {
-      display: block;
-
-      margin-top: 2px;
-
-      font-size: 10px;
-
-      letter-spacing: 2px;
-
-      opacity: .5;
-    }
-
-
-    .header-actions {
-      display: flex;
-
-      gap: 10px;
-    }
-
-    .header-controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    /* =====================================================
-       BUTTONS
-    ===================================================== */
-
-    button {
-      border: 1px solid #444;
-
-      background: #151515;
-
-      color: #ffffff;
-
-      padding: 11px 18px;
-
-      cursor: pointer;
-
-      font-size: 12px;
-
-      font-weight: 800;
-
-      letter-spacing: 1px;
-
-      transition:
-        background .2s ease,
-        border-color .2s ease,
-        transform .2s ease;
-    }
-
-
-    button:hover {
-      background: #252525;
-
-      border-color: #777;
-
-      transform: translateY(-1px);
-    }
-
-
-    button:disabled {
-      opacity: .5;
-
-      cursor: not-allowed;
-
-      transform: none;
-    }
-
-
-    .primary-button {
-      background: #ffffff;
-
-      color: #000000;
-
-      border-color: #ffffff;
-    }
-
-
-    .primary-button:hover {
-      background: #dddddd;
-
-      border-color: #dddddd;
-    }
-
-
-    .approve-button {
-      background: #17351f;
-
-      border-color: #285d36;
-    }
-
-
-    .approve-button:hover {
-      background: #24552f;
-    }
-
-
-    .reject-button {
-      background: #351717;
-
-      border-color: #5d2929;
-    }
-
-
-    .reject-button:hover {
-      background: #542222;
-    }
-
-
-    .delete-button {
-      background: #3a1111;
-
-      border-color: #702222;
-    }
-
-
-    .delete-button:hover {
-      background: #681c1c;
-    }
-
-
-    /* =====================================================
-       LOGIN
-    ===================================================== */
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+
+    a { color: inherit; }
 
     .login-wrapper {
       min-height: 100vh;
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      padding: 30px;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
     }
 
+    .login-wrapper::before,
+    .login-wrapper::after {
+      content: "";
+      position: absolute;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: .12;
+      pointer-events: none;
+      background: var(--red);
+    }
+
+    .login-wrapper::before { top: -200px; left: -150px; }
+    .login-wrapper::after { bottom: -230px; right: -130px; }
 
     .login-card {
+      position: relative;
+      z-index: 1;
       width: 100%;
-
-      max-width: 450px;
-
-      padding: 40px;
-
-      border: 1px solid #292929;
-
-      background: #111;
+      max-width: 365px;
+      padding: 30px;
+      background: rgba(18,18,18,.96);
+      border: 1px solid #303030;
+      border-radius: 20px;
+      box-shadow: 0 25px 80px rgba(0,0,0,.55);
+      overflow: hidden;
     }
 
+    .login-card::before {
+      content: "";
+      height: 3px;
+      position: absolute;
+      inset: 0 0 auto;
+      background: linear-gradient(90deg, transparent, var(--red), #ff6978, transparent);
+    }
+
+    .brand {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .brand img {
+      width: 43px;
+      height: 43px;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+
+    .brand span {
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    .kicker {
+      color: var(--red);
+      text-align: center;
+      text-transform: uppercase;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      margin: 0 0 7px;
+    }
 
     .login-card h1 {
-      margin-bottom: 8px;
-
-      font-size: 32px;
-
-      letter-spacing: -1px;
+      text-align: center;
+      font-size: 25px;
+      line-height: 1.2;
+      margin: 0 0 9px;
     }
 
-
-    .login-card .subtitle {
-      margin-bottom: 30px;
-
-      font-size: 14px;
-
-      opacity: .55;
-    }
-
-
-    .form-group {
-      margin-bottom: 18px;
-    }
-
-
-    .form-group label {
-      display: block;
-
-      margin-bottom: 7px;
-
-      font-size: 12px;
-
-      font-weight: 800;
-
-      letter-spacing: 1px;
-
-      opacity: .75;
-    }
-
-
-    .form-group input {
-      width: 100%;
-
-      padding: 13px 14px;
-
-      border: 1px solid #333;
-
-      outline: none;
-
-      background: #080808;
-
-      color: #ffffff;
-    }
-
-
-    .form-group input:focus {
-      border-color: #777;
-    }
-
-
-    .login-actions {
-      display: grid;
-
-      grid-template-columns: 1fr 1fr;
-
-      gap: 10px;
-
-      margin-top: 25px;
-    }
-
-
-    .login-message {
-      min-height: 20px;
-
-      margin-top: 18px;
-
+    .subtitle {
+      color: var(--muted);
       font-size: 13px;
-
-      color: #dddddd;
+      text-align: center;
+      margin: 0 0 24px;
     }
 
+    .field { margin-bottom: 16px; }
 
-    .hidden {
-      display: none !important;
+    .field label {
+      display: block;
+      color: #ddd;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 7px;
     }
 
+    .field input,
+    .toolbar input,
+    .toolbar select {
+      width: 100%;
+      color: white;
+      background: #0c0c0c;
+      border: 1px solid #343434;
+      border-radius: 9px;
+      padding: 12px 13px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
 
-    /* =====================================================
-       DASHBOARD
-    ===================================================== */
+    .field input:focus,
+    .toolbar input:focus,
+    .toolbar select:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(239,35,60,.12);
+    }
+
+    .primary-btn {
+      width: 100%;
+      border: 0;
+      border-radius: 9px;
+      padding: 12px 15px;
+      color: white;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      background: linear-gradient(135deg, var(--red), var(--red-dark));
+      box-shadow: 0 7px 22px rgba(239,35,60,.18);
+      transition: transform .2s, filter .2s;
+    }
+
+    .primary-btn:hover { filter: brightness(1.12); }
+    .primary-btn:active { transform: scale(.99); }
+
+    .text-btn {
+      border: 0;
+      background: transparent;
+      color: #ff6677;
+      font-size: 12px;
+      padding: 12px 0 0;
+    }
+
+    .center { text-align: center; }
+
+    .back-link {
+      display: block;
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      color: #aaa;
+      font-size: 12px;
+      margin-top: 20px;
+      text-decoration: none;
+    }
+
+    .back-link:hover { color: white; }
+
+    .message {
+      min-height: 18px;
+      margin: 12px 0 0;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .message.error { color: #ff7180; }
+    .message.success { color: #4ade80; }
 
     .dashboard {
-      padding: 50px 0 80px;
+      max-width: 1250px;
+      margin: auto;
+      padding: 28px 22px 50px;
     }
 
-
-    .dashboard-title {
-      margin-bottom: 35px;
-    }
-
-
-    .dashboard-title p {
-      margin-bottom: 10px;
-
-      font-size: 11px;
-
-      font-weight: 800;
-
-      letter-spacing: 4px;
-
-      opacity: .5;
-    }
-
-
-    .dashboard-title h1 {
-      font-size: clamp(38px, 6vw, 60px);
-
-      line-height: 1;
-
-      letter-spacing: -2px;
-    }
-
-
-    /* =====================================================
-       STATS
-    ===================================================== */
-
-    .stats {
-      display: grid;
-
-      grid-template-columns:
-        repeat(3, 1fr);
-
-      gap: 15px;
-
-      margin-bottom: 50px;
-    }
-
-
-    .stat-card {
-      padding: 25px;
-
-      border: 1px solid #292929;
-
-      background: #111;
-    }
-
-
-    .stat-card span {
-      display: block;
-
-      margin-bottom: 8px;
-
-      font-size: 11px;
-
-      font-weight: 800;
-
-      letter-spacing: 2px;
-
-      opacity: .5;
-    }
-
-
-    .stat-card strong {
-      font-size: 35px;
-
-      line-height: 1;
-    }
-
-
-    /* =====================================================
-       SECTIONS
-    ===================================================== */
-
-    .feedback-section {
-      margin-bottom: 50px;
-    }
-
-
-    .section-heading {
+    .topbar {
       display: flex;
-
       align-items: center;
-
       justify-content: space-between;
-
-      gap: 20px;
-
-      margin-bottom: 20px;
-
-      padding-bottom: 15px;
-
-      border-bottom: 1px solid #292929;
-    }
-
-
-    .section-heading h2 {
-      font-size: 25px;
-    }
-
-
-    .section-heading span {
-      font-size: 12px;
-
-      opacity: .5;
-    }
-
-
-    /* =====================================================
-       FEEDBACK CARDS
-    ===================================================== */
-
-    .feedback-list {
-      display: grid;
-
-      gap: 15px;
-    }
-
-
-    .feedback-card {
-      padding: 25px;
-
-      border: 1px solid #292929;
-
-      background: #111;
-    }
-
-
-    .feedback-top {
-      display: flex;
-
-      align-items: flex-start;
-
-      justify-content: space-between;
-
-      gap: 20px;
-
-      margin-bottom: 15px;
-    }
-
-
-    .feedback-name {
-      font-size: 18px;
-
-      font-weight: 800;
-    }
-
-
-    .feedback-date {
-      margin-top: 3px;
-
-      font-size: 11px;
-
-      opacity: .45;
-    }
-
-
-    .rating {
-      white-space: nowrap;
-
-      font-size: 18px;
-
-      letter-spacing: 2px;
-    }
-
-
-    .feedback-text {
-      margin-bottom: 20px;
-
-      font-size: 15px;
-
-      opacity: .8;
-
-      white-space: pre-wrap;
-
-      word-break: break-word;
-    }
-
-
-    .status-badge {
-      display: inline-block;
-
-      padding: 5px 9px;
-
-      margin-bottom: 18px;
-
-      border: 1px solid #444;
-
-      font-size: 10px;
-
-      font-weight: 800;
-
-      letter-spacing: 1px;
-    }
-
-
-    .status-pending {
-      background: #302a16;
-
-      border-color: #655823;
-
-      color: #e7d46e;
-    }
-
-
-    .status-approved {
-      background: #17351f;
-
-      border-color: #285d36;
-
-      color: #7dd98c;
-    }
-
-
-    .status-rejected {
-      background: #351717;
-
-      border-color: #5d2929;
-
-      color: #e78383;
-    }
-
-
-    .feedback-actions {
-      display: flex;
-
       flex-wrap: wrap;
-
-      gap: 8px;
+      gap: 18px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 22px;
+      margin-bottom: 25px;
     }
 
-
-    .empty-state {
-      padding: 35px;
-
-      text-align: center;
-
-      border: 1px dashed #333;
-
-      background: #0d0d0d;
-
-      font-size: 14px;
-
-      opacity: .5;
-    }
-
-
-    /* =====================================================
-       NOTIFICATION
-    ===================================================== */
-
-    .notification {
-      position: fixed;
-
-      right: 25px;
-
-      bottom: 25px;
-
-      z-index: 500;
-
-      max-width: 350px;
-
-      padding: 15px 20px;
-
-      border: 1px solid #444;
-
-      background: #151515;
-
-      box-shadow:
-        0 10px 40px rgba(0, 0, 0, .4);
-
-      font-size: 13px;
-    }
-
-
-    /* =====================================================
-       MOBILE
-    ===================================================== */
-
-    @media (max-width: 700px) {
-
-      .header-inner {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        min-height: 0;
-        gap: 8px;
-        padding: 10px 0;
-      }
-
-      .logo {
-        grid-column: 1;
-        grid-row: 1;
-        font-size: 20px;
-      }
-
-      .header-controls {
-        display: contents;
-      }
-
-      .back-website-link {
-        grid-column: 2;
-        grid-row: 1;
-        justify-self: end;
-      }
-
-      .header-actions {
-        grid-column: 1 / -1;
-        grid-row: 2;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 6px;
-        width: 100%;
-      }
-
-      .rw-admin-theme .header-actions button {
-        min-height: 42px;
-        width: 100%;
-        padding: 9px 12px;
-
-        font-size: 10px;
-      }
-
-      .back-website-link {
-        min-height: 40px;
-        padding: 8px 9px;
-        font-size: 10px;
-      }
-
-
-      .dashboard {
-        padding-top: 35px;
-      }
-
-
-      .stats {
-        grid-template-columns: 1fr;
-      }
-
-
-      .section-heading {
-        align-items: flex-start;
-
-        flex-direction: column;
-      }
-
-
-      .feedback-top {
-        flex-direction: column;
-      }
-
-
-      .feedback-actions {
-        flex-direction: column;
-      }
-
-
-      .feedback-actions button {
-        width: 100%;
-      }
-
-
-      .login-card {
-        padding: 28px 22px;
-      }
-
-
-      .login-actions {
-        grid-template-columns: 1fr;
-      }
-
-    }
-
-  </style>
-  <link rel="stylesheet" href="rawwayfit-theme.css">
-  <style>
-    .rw-admin-theme .login-wrapper {
-      position: relative;
-      overflow: hidden;
-      background:
-        radial-gradient(ellipse at 50% 0, #dce8ff9c 0, transparent 48%),
-        radial-gradient(ellipse at 100% 100%, #eee5ff80 0, transparent 42%);
-    }
-
-    .rw-admin-theme #loginScreen {
-      padding-top: 84px;
-    }
-
-    .rw-admin-theme .login-card {
-      position: relative;
-      overflow: hidden;
-      width: min(100%, 620px);
-      max-width: 620px;
-      padding: clamp(24px, 5vw, 42px);
-      border: 1px solid #d8e2f2;
-      border-radius: 24px;
-      background: linear-gradient(145deg, #fff 0%, #fbfcff 68%, #f5f1ff 100%);
-      box-shadow: 0 24px 60px #203b691c, 0 3px 10px #203b690a;
-    }
-
-    .rw-admin-theme .login-card > * {
-      position: relative;
-    }
-
-    .rw-admin-theme .admin-login-brand {
-      margin-bottom: 22px;
-    }
-
-    .rw-admin-theme .admin-login-brand img {
-      width: 60px;
-      height: 60px;
-      margin-right: 0;
-      padding: 0;
-      border: 0;
-      border-radius: 0;
-      background: transparent;
-    }
-
-    .rw-admin-theme .admin-login-kicker {
-      display: inline-block;
-      margin-bottom: 10px;
-      padding: 6px 10px;
-      border: 1px solid #dbe5ff;
-      border-radius: 999px;
-      background: #eff4ff;
-      color: var(--rw-blue);
-      font-size: 11px;
-      letter-spacing: 1px;
-    }
-
-    .rw-admin-theme .login-card h1 {
-      margin: 0;
-      font-size: clamp(25px, 4vw, 32px);
-      letter-spacing: -.7px;
-    }
-
-    .rw-admin-theme .login-card .subtitle {
-      margin: 9px 0 26px;
-      font-size: 14px;
-      line-height: 1.55;
-    }
-
-    .rw-admin-theme .login-card .form-group input {
-      min-height: 50px;
-      border-radius: 11px;
-      transition: border-color .2s ease, box-shadow .2s ease;
-    }
-
-    .rw-admin-theme .login-card .form-group input:focus {
-      border-color: var(--rw-blue);
-      box-shadow: 0 0 0 4px #2457e61a;
-    }
-
-    .rw-admin-theme .login-card .form-group {
-      margin-bottom: 18px;
-    }
-
-    .rw-admin-theme .login-card .form-group label {
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 0;
-      text-transform: none;
-    }
-
-    .rw-admin-theme .login-card .login-actions {
-      margin-top: 0;
-    }
-
-    .rw-admin-theme .login-card .login-actions button {
-      min-height: 50px;
-      border-radius: 11px;
-      font-size: 15px;
-    }
-
-    .rw-admin-theme .login-back-link {
-      min-height: 40px;
-      padding: 8px 12px;
-      font-size: 12px;
-    }
-
-    .login-back-link {
-      position: absolute;
-      top: 24px;
-      right: 28px;
-      z-index: 1;
-      margin: 0;
-    }
-
-    .back-website-link {
-      display: inline-flex;
+    .topbar-brand {
+      display: flex;
       align-items: center;
-      justify-content: center;
-      min-height: 44px;
-      padding: 10px 16px;
-      border: 1px solid var(--rw-blue);
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--rw-blue), var(--rw-purple));
-      color: #fff;
-      font-size: 14px;
-      font-weight: 700;
-      line-height: 1.2;
-      text-decoration: none;
-      white-space: nowrap;
-      box-shadow: none;
-      transition: filter .2s ease, transform .2s ease;
-    }
-
-    .back-website-link:hover {
-      filter: brightness(.96);
-      transform: translateY(-1px);
-    }
-
-    .rw-admin-theme .header-actions button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 46px;
-      padding: 12px 18px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 800;
-      letter-spacing: 0;
-      line-height: 1.2;
-    }
-
-    .rw-admin-theme #refreshButton {
-      border-color: #cbd6e8;
-      background: #f1f5f9;
-      color: #334155;
-      box-shadow: none;
-    }
-
-    .rw-admin-theme #refreshButton:hover {
-      background: #e2e8f0;
-      color: #334155;
-    }
-
-    .rw-admin-theme #logoutButton {
-      border-color: #991b1b;
-      background: #b91c1c;
-      color: #fff;
-      box-shadow: none;
-    }
-
-    .rw-admin-theme #logoutButton:hover {
-      background: #991b1b;
-      color: #fff;
-    }
-
-    @media (max-width: 700px) {
-      .rw-admin-theme #loginScreen {
-        padding-top: 76px;
-      }
-
-      .rw-admin-theme .login-card {
-        padding: 24px 20px;
-        border-radius: 18px;
-      }
-
-      .login-back-link {
-        top: 14px;
-        right: 14px;
-      }
-
-      .back-website-link {
-        min-height: 40px;
-        padding: 8px 9px;
-        font-size: 10px;
-        align-self: center;
-      }
-
-      .rw-admin-theme .header-actions button {
-        min-height: 42px;
-        padding: 9px 12px;
-        font-size: 10px;
-      }
-    }
-
-    @media (max-width: 380px) {
-      .login-back-link {
-        top: 10px;
-        right: 10px;
-      }
-    }
-
-    @media (max-width: 380px) {
-      .rw-admin-theme .header-inner {
-        grid-template-columns: minmax(0, 1fr);
-      }
-
-      .rw-admin-theme .logo {
-        grid-column: 1;
-        grid-row: 1;
-        min-width: 0;
-      }
-
-      .rw-admin-theme .back-website-link {
-        grid-column: 1;
-        grid-row: 2;
-        justify-self: end;
-      }
-
-      .rw-admin-theme .header-actions {
-        grid-column: 1;
-        grid-row: 3;
-      }
-    }
-  </style>
-
-
-<style>
-  /* RAWWAYFIT feedback admin: light theme */
-  body.rw-admin-theme {
-    background: #f8fafc;
-    color: #111827;
-  }
-
-  .rw-admin-theme .admin-header {
-    background: #fff;
-    border-bottom: 1px solid #e5e7eb;
-    box-shadow: 0 2px 10px rgb(15 23 42 / 4%);
-  }
-
-  .rw-admin-theme .logo,
-  .rw-admin-theme .logo-name {
-    color: #b91c1c;
-  }
-
-  .rw-admin-theme .login-wrapper {
-    background: #f8fafc;
-  }
-
-  .rw-admin-theme .login-card {
-    color: #111827;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 20px;
-    box-shadow: 0 18px 50px rgb(15 23 42 / 8%);
-  }
-
-  .rw-admin-theme .login-card h1,
-  .rw-admin-theme .dashboard-title h1,
-  .rw-admin-theme .section-heading h2 {
-    color: #111827;
-  }
-
-  .rw-admin-theme .subtitle,
-  .rw-admin-theme .dashboard-title p,
-  .rw-admin-theme .section-heading span {
-    color: #64748b;
-    opacity: 1;
-  }
-
-  .rw-admin-theme .admin-login-kicker {
-    color: #b91c1c;
-    background: #fef2f2;
-    border-color: #fecaca;
-  }
-
-  .rw-admin-theme .form-group label {
-    color: #374151;
-    opacity: 1;
-  }
-
-  .rw-admin-theme .form-group input {
-    color: #111827;
-    background: #fff;
-    border: 1px solid #cbd5e1;
-    border-radius: 10px;
-  }
-
-  .rw-admin-theme .form-group input:focus {
-    border-color: #dc2626;
-    box-shadow: 0 0 0 3px rgb(220 38 38 / 12%);
-  }
-
-  .rw-admin-theme button {
-    color: #334155;
-    background: #f1f5f9;
-    border: 1px solid #cbd5e1;
-    border-radius: 9px;
-    letter-spacing: 0;
-  }
-
-  .rw-admin-theme button:hover {
-    background: #e2e8f0;
-  }
-
-  .rw-admin-theme .primary-button {
-    color: #fff;
-    background: #dc2626;
-    border-color: #dc2626;
-  }
-
-  .rw-admin-theme .primary-button:hover {
-    color: #fff;
-    background: #b91c1c;
-  }
-
-  .rw-admin-theme .approve-button {
-    color: #166534;
-    background: #f0fdf4;
-    border-color: #bbf7d0;
-  }
-
-  .rw-admin-theme .approve-button:hover {
-    background: #dcfce7;
-  }
-
-  .rw-admin-theme .reject-button {
-    color: #9a3412;
-    background: #fff7ed;
-    border-color: #fed7aa;
-  }
-
-  .rw-admin-theme .reject-button:hover {
-    background: #ffedd5;
-  }
-
-  .rw-admin-theme .delete-button {
-    color: #b91c1c;
-    background: #fef2f2;
-    border-color: #fecaca;
-  }
-
-  .rw-admin-theme .delete-button:hover {
-    background: #fee2e2;
-  }
-
-  .rw-admin-theme .back-website-link {
-    color: #fff;
-    background: #dc2626;
-    border-color: #dc2626;
-  }
-
-  .rw-admin-theme .stat-card,
-  .rw-admin-theme .feedback-card {
-    display: block;
-    color: #111827;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    box-shadow: 0 4px 16px rgb(15 23 42 / 4%);
-    text-decoration: none;
-  }
-
-  .rw-admin-theme .stat-card:hover,
-  .rw-admin-theme .feedback-card:hover {
-    border-color: #fecaca;
-  }
-
-  .rw-admin-theme .stat-card span {
-    color: #64748b;
-    opacity: 1;
-  }
-
-  .rw-admin-theme .stat-card strong {
-    color: #111827;
-  }
-
-  .rw-admin-theme .stat-pending {
-    border-top: 3px solid #d97706;
-  }
-
-  .rw-admin-theme .stat-approved {
-    border-top: 3px solid #16a34a;
-  }
-
-  .rw-admin-theme .stat-rejected {
-    border-top: 3px solid #dc2626;
-  }
-
-  .rw-admin-theme .feedback-section {
-    scroll-margin-top: 100px;
-  }
-
-  .rw-admin-theme .section-heading {
-    border-bottom-color: #e2e8f0;
-  }
-
-  .rw-admin-theme .feedback-name {
-    color: #111827;
-  }
-
-  .rw-admin-theme .feedback-date {
-    color: #64748b;
-    opacity: 1;
-  }
-
-  .rw-admin-theme .feedback-text {
-    color: #374151;
-    opacity: 1;
-  }
-
-  .rw-admin-theme .status-pending {
-    color: #92400e;
-    background: #fffbeb;
-    border-color: #fde68a;
-  }
-
-  .rw-admin-theme .status-approved {
-    color: #166534;
-    background: #f0fdf4;
-    border-color: #bbf7d0;
-  }
-
-  .rw-admin-theme .status-rejected {
-    color: #991b1b;
-    background: #fef2f2;
-    border-color: #fecaca;
-  }
-
-  .rw-admin-theme .empty-state {
-    color: #64748b;
-    background: #fff;
-    border: 1px dashed #cbd5e1;
-    border-radius: 12px;
-    opacity: 1;
-  }
-
-  .rw-admin-theme .notification {
-    color: #111827;
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    box-shadow: 0 12px 35px rgb(15 23 42 / 12%);
-  }
-
-  .rw-admin-theme .login-message {
-    color: #475569;
-    opacity: 1;
-  }
-
-  @media (max-width: 700px) {
-    .rw-admin-theme .stats {
-      grid-template-columns: 1fr;
       gap: 12px;
     }
 
-    .rw-admin-theme .feedback-card {
+    .topbar-brand img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      border-radius: 50%;
+    }
+
+    .topbar-brand strong {
+      display: block;
+      font-size: 17px;
+      letter-spacing: 1.4px;
+    }
+
+    .topbar-brand span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+
+    .btn {
+      padding: 9px 13px;
+      border: 1px solid #383838;
+      border-radius: 8px;
+      background: #181818;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .btn:hover { border-color: #777; }
+    .btn-red { background: var(--red); border-color: var(--red); }
+    .btn-green { color: #86efac; border-color: #24683d; }
+    .btn-yellow { color: #fde68a; border-color: #715b1b; }
+    .btn-danger { color: #fda4af; border-color: #73313a; }
+
+    .page-heading { margin-bottom: 24px; }
+    .page-heading .kicker { text-align: left; }
+    .page-heading h1 { margin: 0; font-size: clamp(26px, 4vw, 36px); }
+    .page-heading p { color: var(--muted); margin: 7px 0 0; font-size: 14px; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: linear-gradient(145deg, #171717, #101010);
+      border: 1px solid var(--border);
+      border-radius: 13px;
       padding: 18px;
     }
-  }
-</style>
 
+    .stat-card span { color: var(--muted); font-size: 12px; }
+    .stat-card strong { display: block; font-size: 30px; margin-top: 4px; }
+    .stat-card.pending strong { color: var(--yellow); }
+    .stat-card.approved strong { color: var(--green); }
+    .stat-card.rejected strong { color: #fb7185; }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 22px;
+      overflow: hidden;
+    }
+
+    .panel-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-heading h2 { font-size: 16px; margin: 0; }
+    .panel-heading p { color: var(--muted); font-size: 12px; margin: 4px 0 0; }
+
+    .tabs {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      padding: 14px 18px 0;
+    }
+
+    .tab {
+      padding: 9px 13px;
+      border: 1px solid #333;
+      border-radius: 8px;
+      background: #161616;
+      color: #bbb;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .tab.active {
+      background: rgba(239,35,60,.12);
+      border-color: var(--red);
+      color: white;
+    }
+
+    .tab-count {
+      display: inline-grid;
+      place-items: center;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 5px;
+      margin-left: 5px;
+      border-radius: 6px;
+      background: #2b2b2b;
+      font-size: 10px;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(180px, 1fr) 180px auto;
+      gap: 10px;
+      padding: 15px 18px;
+    }
+
+    .toolbar input, .toolbar select { font-size: 12px; }
+
+    .table-wrap { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 790px;
+    }
+
+    th, td {
+      padding: 14px 16px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid #252525;
+      font-size: 12px;
+    }
+
+    th {
+      color: #aaa;
+      background: #151515;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      font-size: 10px;
+    }
+
+    tbody tr:hover { background: #171717; }
+    tbody tr:last-child td { border-bottom: 0; }
+
+    .client-name { font-weight: 800; color: white; }
+    .stars { color: #facc15; letter-spacing: 1px; white-space: nowrap; }
+    .feedback-text {
+      max-width: 380px;
+      color: #ddd;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+
+    .status-pending { color: #fde68a; background: #3b3012; }
+    .status-approved { color: #86efac; background: #12331f; }
+    .status-rejected { color: #fda4af; background: #3a1820; }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-width: 145px;
+    }
+
+    .actions .btn { padding: 7px 9px; font-size: 11px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 38px 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 15px 18px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .pagination-actions { display: flex; gap: 7px; }
+
+    .notice {
+      padding: 12px 15px;
+      margin-bottom: 18px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .notice.error { border-color: #73313a; color: #fda4af; }
+    .notice.success { border-color: #24683d; color: #86efac; }
+
+    .footer {
+      text-align: center;
+      color: #777;
+      font-size: 11px;
+      padding-top: 8px;
+    }
+
+    @media (max-width: 760px) {
+      .dashboard { padding: 20px 12px 35px; }
+      .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+      .stat-card { padding: 14px; }
+      .stat-card strong { font-size: 25px; }
+      .toolbar { grid-template-columns: 1fr; }
+      .panel-heading { padding: 15px; }
+      .tabs { padding-left: 12px; padding-right: 12px; }
+      .topbar { align-items: flex-start; }
+    }
+
+    @media (max-width: 420px) {
+      .login-card { padding: 25px 20px; }
+      .login-card h1 { font-size: 22px; }
+      .stats { gap: 8px; }
+      .stat-card strong { font-size: 23px; }
+      .tab { padding: 8px 9px; }
+    }
+  </style>
 </head>
 
-
-<body class="rw-admin-theme">
-
-
-<!-- =====================================================
-     LOGIN SCREEN
-===================================================== -->
-
-<div
-  id="loginScreen"
-  class="login-wrapper"
->
-
-  <a class="back-website-link login-back-link" href="index.html">
-    ← Back to website
-  </a>
-
-  <div class="login-card">
-
-    <div class="admin-login-brand">
-      <img
-        src="https://raw.githubusercontent.com/rawwayfit/RWF-Photos/refs/heads/main/logo/main_logo.png"
-        alt=""
-        width="200"
-        height="60"
-      >
-      <span>RAWWAYFIT</span>
-    </div>
-
-    <p class="admin-login-kicker">Private admin area</p>
-
-    <h1>
-      Feedback Administration
-    </h1>
-
-    <p class="subtitle">
-      Sign in to review and manage client feedback.
-    </p>
-
-
-    <form id="loginForm">
-
-
-      <div class="form-group">
-
-        <label for="loginEmail">
-          EMAIL
-        </label>
-
-        <input
-          type="email"
-          id="loginEmail"
-          required
-          autocomplete="email"
-        >
-
-      </div>
-
-
-      <div class="form-group">
-
-        <label for="loginPassword">
-          PASSWORD
-        </label>
-
-        <input
-          type="password"
-          id="loginPassword"
-          required
-          autocomplete="current-password"
-        >
-
-      </div>
-
-
-      <div class="login-actions">
-
-        <button
-          type="submit"
-          class="primary-button"
-          id="loginButton"
-        >
-          LOGIN
-        </button>
-
-      </div>
-
-      
-
-      <p
-        id="loginMessage"
-        class="login-message"
-        role="status"
-        aria-live="polite"
-      ></p>
-
-
-    </form>
-
-  </div>
-
-</div>
-
-<div id="passwordRecoveryScreen" class="login-wrapper hidden">
-  <div class="login-card">
-    <p class="admin-login-kicker">Account recovery</p>
-    <h1>Set a new password</h1>
-    <p class="subtitle">Choose a new password for your feedback admin account.</p>
-    <form id="passwordRecoveryForm">
-      <div class="form-group">
-        <label for="newAdminPassword">NEW PASSWORD</label>
-        <input id="newAdminPassword" type="password" autocomplete="new-password" minlength="8" required>
-      </div>
-      <div class="form-group">
-        <label for="confirmAdminPassword">CONFIRM NEW PASSWORD</label>
-        <input id="confirmAdminPassword" type="password" autocomplete="new-password" minlength="8" required>
-      </div>
-      <div class="login-actions">
-        <button type="submit" class="primary-button" id="saveAdminPasswordButton">UPDATE PASSWORD</button>
-      </div>
-      <p id="passwordRecoveryMessage" class="login-message" role="status" aria-live="polite"></p>
-    </form>
-  </div>
-</div>
-
-
-
-<!-- =====================================================
-     ADMIN DASHBOARD
-===================================================== -->
-
-<div
-  id="adminDashboard"
-  class="hidden"
->
-
-
-  <!-- HEADER -->
-
-  <header class="admin-header">
-
-    <div class="container header-inner">
-
-      <div class="logo">
-        <img
-          src="https://raw.githubusercontent.com/rawwayfit/RWF-Photos/refs/heads/main/logo/main_logo.png"
-          alt=""
-          width="200"
-          height="60"
-        >
-        <div class="logo-copy">
-          <span class="logo-name">RAWWAYFIT</span>
-          <span>FEEDBACK ADMIN</span>
+<body>
+  <!-- LOGIN -->
+  <section id="loginScreen" class="login-wrapper">
+    <div>
+      <div class="login-card">
+        <div class="brand">
+          <img
+            src="https://raw.githubusercontent.com/rawwayfit/RWF-Photos/refs/heads/main/logo/main_logo.png"
+            alt="RAWWAYFIT logo"
+            onerror="this.style.display='none'">
+          <span>RAWWAYFIT</span>
         </div>
-      </div>
 
+        <p class="kicker">Private admin area</p>
+        <h1>Feedback Administration</h1>
+        <p class="subtitle">Sign in to review and manage client feedback.</p>
 
-      <div class="header-controls">
-        <a class="back-website-link" href="index.html">
-          ← Back to website
-        </a>
+        <form id="loginForm">
+          <div class="field">
+            <label for="loginEmail">Admin email</label>
+            <input id="loginEmail" type="email" autocomplete="username"
+              placeholder="you@example.com" required>
+          </div>
 
-        <div class="header-actions">
-          <button
-            type="button"
-            id="refreshButton"
-          >
-            Refresh
+          <div class="field">
+            <label for="loginPassword">Password</label>
+            <input id="loginPassword" type="password"
+              autocomplete="current-password" placeholder="Enter your password"
+              required>
+          </div>
+
+          <button id="loginButton" class="primary-btn" type="submit">
+            SIGN IN
           </button>
+          <p id="loginMessage" class="message" role="status" aria-live="polite"></p>
+        </form>
 
-
-          <button
-            type="button"
-            id="logoutButton"
-          >
-            Sign out
+        <div class="center">
+          <button id="showRecoveryButton" class="text-btn" type="button">
+            Forgot your password?
           </button>
         </div>
       </div>
 
+      <a class="back-link" href="index.html">← Back to website</a>
     </div>
+  </section>
 
-  </header>
+  <!-- PASSWORD RECOVERY -->
+  <section id="passwordRecoveryScreen" class="login-wrapper" hidden>
+    <div>
+      <div class="login-card">
+        <div class="brand">
+          <img
+            src="https://raw.githubusercontent.com/rawwayfit/RWF-Photos/refs/heads/main/logo/main_logo.png"
+            alt="RAWWAYFIT logo"
+            onerror="this.style.display='none'">
+          <span>RAWWAYFIT</span>
+        </div>
 
+        <p class="kicker">Account recovery</p>
+        <h1>Reset Password</h1>
+        <p class="subtitle">We'll send a password reset link to your admin email.</p>
 
+        <form id="passwordRecoveryForm">
+          <div class="field">
+            <label for="recoveryEmail">Admin email</label>
+            <input id="recoveryEmail" type="email" autocomplete="email"
+              placeholder="you@example.com" required>
+          </div>
+          <button id="recoveryButton" class="primary-btn" type="submit">
+            SEND RESET LINK
+          </button>
+          <p id="recoveryMessage" class="message" role="status" aria-live="polite"></p>
+        </form>
+
+        <div class="center">
+          <button id="backToLoginButton" class="text-btn" type="button">
+            ← Back to sign in
+          </button>
+        </div>
+      </div>
+      <a class="back-link" href="index.html">← Back to website</a>
+    </div>
+  </section>
 
   <!-- DASHBOARD -->
-
-  <main class="dashboard">
-
-    <div class="container">
-
-
-      <div class="dashboard-title">
-
-        <p>
-          ADMINISTRATION
-        </p>
-
-        <h1>
-          CLIENT FEEDBACK
-        </h1>
-
+  <main id="dashboardScreen" class="dashboard" hidden>
+    <header class="topbar">
+      <div class="topbar-brand">
+        <img
+          src="https://raw.githubusercontent.com/rawwayfit/RWF-Photos/refs/heads/main/logo/main_logo.png"
+          alt="RAWWAYFIT logo"
+          onerror="this.style.display='none'">
+        <div>
+          <strong>RAWWAYFIT</strong>
+          <span>Feedback administration</span>
+        </div>
       </div>
 
+      <div class="topbar-actions">
+        <a class="btn" href="index.html" style="text-decoration:none">View website</a>
+        <button id="refreshButton" class="btn" type="button">↻ Refresh</button>
+        <button id="logoutButton" class="btn btn-red" type="button">Sign out</button>
+      </div>
+    </header>
 
+    <div id="dashboardMessage" class="notice" hidden role="status" aria-live="polite"></div>
 
-      <!-- =================================================
-           STATS
-      ================================================= -->
+    <section class="page-heading">
+      <p class="kicker">ADMIN DASHBOARD</p>
+      <h1>Client Feedback</h1>
+      <p>Review submissions before publishing them on your website.</p>
+    </section>
 
-      <div class="stats">
+    <section class="stats" aria-label="Feedback summary">
+      <div class="stat-card">
+        <span>Total feedback</span>
+        <strong id="totalCount">0</strong>
+      </div>
+      <div class="stat-card pending">
+        <span>Pending review</span>
+        <strong id="pendingCount">0</strong>
+      </div>
+      <div class="stat-card approved">
+        <span>Approved</span>
+        <strong id="approvedCount">0</strong>
+      </div>
+      <div class="stat-card rejected">
+        <span>Rejected</span>
+        <strong id="rejectedCount">0</strong>
+      </div>
+    </section>
 
-
-        <a class="stat-card stat-pending" href="#pendingFeedbackSection" aria-label="View pending feedback">
-
-          <span>
-            PENDING
-          </span>
-
-          <strong id="pendingCount">
-            0
-          </strong>
-
-        </a>
-
-
-        <a class="stat-card stat-approved" href="#approvedFeedbackSection" aria-label="View approved feedback">
-
-          <span>
-            APPROVED
-          </span>
-
-          <strong id="approvedCount">
-            0
-          </strong>
-
-        </a>
-
-
-        <a class="stat-card stat-rejected" href="#rejectedFeedbackSection" aria-label="View rejected feedback">
-
-          <span>
-            REJECTED
-          </span>
-
-          <strong id="rejectedCount">
-            0
-          </strong>
-
-        </a>
-
-
+    <section class="panel">
+      <div class="panel-heading">
+        <div>
+          <h2>Manage submissions</h2>
+          <p>Approve feedback to publish it, or reject and delete unwanted entries.</p>
+        </div>
       </div>
 
+      <div class="tabs" role="tablist" aria-label="Feedback status">
+        <button class="tab active" type="button" data-status="pending" role="tab"
+          aria-selected="true">
+          Pending <span id="pendingTabCount" class="tab-count">0</span>
+        </button>
+        <button class="tab" type="button" data-status="approved" role="tab"
+          aria-selected="false">
+          Approved <span id="approvedTabCount" class="tab-count">0</span>
+        </button>
+        <button class="tab" type="button" data-status="rejected" role="tab"
+          aria-selected="false">
+          Rejected <span id="rejectedTabCount" class="tab-count">0</span>
+        </button>
+        <button class="tab" type="button" data-status="all" role="tab"
+          aria-selected="false">
+          All <span id="allTabCount" class="tab-count">0</span>
+        </button>
+      </div>
 
+      <div class="toolbar">
+        <input id="searchInput" type="search"
+          placeholder="Search name or feedback..." aria-label="Search feedback">
+        <select id="ratingFilter" aria-label="Filter by rating">
+          <option value="all">All ratings</option>
+          <option value="5">5 stars</option>
+          <option value="4">4 stars</option>
+          <option value="3">3 stars</option>
+          <option value="2">2 stars</option>
+          <option value="1">1 star</option>
+        </select>
+        <button id="clearFiltersButton" class="btn" type="button">Clear filters</button>
+      </div>
 
-      <!-- =================================================
-           PENDING
-      ================================================= -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Rating</th>
+              <th>Feedback</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="feedbackRows">
+            <tr><td colspan="6" class="empty-state">Loading feedback...</td></tr>
+          </tbody>
+        </table>
+      </div>
 
-      <section class="feedback-section" id="pendingFeedbackSection" aria-labelledby="pendingFeedbackHeading">
-
-        <div class="section-heading">
-
-          <h2 id="pendingFeedbackHeading">
-            Pending Feedback
-          </h2>
-
-          <span id="pendingLabel">
-            0 submissions
-          </span>
-
+      <div class="pagination">
+        <span id="pageInfo">Page 1</span>
+        <div class="pagination-actions">
+          <button id="previousPageButton" class="btn" type="button" disabled>← Previous</button>
+          <button id="nextPageButton" class="btn" type="button" disabled>Next →</button>
         </div>
+      </div>
+    </section>
 
-
-        <div
-          id="pendingList"
-          class="feedback-list"
-        >
-
-          <div class="empty-state">
-            Loading pending feedback...
-          </div>
-
-        </div>
-
-        <nav class="feedback-pagination" id="pendingPagination" aria-label="Pending feedback pages" hidden>
-          <button type="button" data-feedback-page="pending" data-page-direction="-1" aria-label="Previous pending reviews">Previous</button>
-          <span class="pagination-status" id="pendingPageStatus" aria-live="polite"></span>
-          <button type="button" data-feedback-page="pending" data-page-direction="1" aria-label="Next pending reviews">Next</button>
-        </nav>
-
-      </section>
-
-
-
-      <!-- =================================================
-           APPROVED
-      ================================================= -->
-
-      <section class="feedback-section" id="approvedFeedbackSection" aria-labelledby="approvedFeedbackHeading">
-
-        <div class="section-heading">
-
-          <h2 id="approvedFeedbackHeading">
-            Approved Feedback
-          </h2>
-
-          <span id="approvedLabel">
-            0 submissions
-          </span>
-
-        </div>
-
-
-        <div
-          id="approvedList"
-          class="feedback-list"
-        >
-
-          <div class="empty-state">
-            Loading approved feedback...
-          </div>
-
-        </div>
-
-        <nav class="feedback-pagination" id="approvedPagination" aria-label="Approved feedback pages" hidden>
-          <button type="button" data-feedback-page="approved" data-page-direction="-1" aria-label="Previous approved reviews">Previous</button>
-          <span class="pagination-status" id="approvedPageStatus" aria-live="polite"></span>
-          <button type="button" data-feedback-page="approved" data-page-direction="1" aria-label="Next approved reviews">Next</button>
-        </nav>
-
-      </section>
-
-
-
-      <!-- =================================================
-           REJECTED
-      ================================================= -->
-
-      <section class="feedback-section" id="rejectedFeedbackSection" aria-labelledby="rejectedFeedbackHeading">
-
-        <div class="section-heading">
-
-          <h2 id="rejectedFeedbackHeading">
-            Rejected Feedback
-          </h2>
-
-          <span id="rejectedLabel">
-            0 submissions
-          </span>
-
-        </div>
-
-
-        <div
-          id="rejectedList"
-          class="feedback-list"
-        >
-
-          <div class="empty-state">
-            Loading rejected feedback...
-          </div>
-
-        </div>
-
-        <nav class="feedback-pagination" id="rejectedPagination" aria-label="Rejected feedback pages" hidden>
-          <button type="button" data-feedback-page="rejected" data-page-direction="-1" aria-label="Previous rejected reviews">Previous</button>
-          <span class="pagination-status" id="rejectedPageStatus" aria-live="polite"></span>
-          <button type="button" data-feedback-page="rejected" data-page-direction="1" aria-label="Next rejected reviews">Next</button>
-        </nav>
-
-      </section>
-
-
-    </div>
-
+    <p class="footer">RAWWAYFIT · Private feedback administration</p>
   </main>
 
-</div>
-
-
-
-<!-- =====================================================
-     NOTIFICATION
-===================================================== -->
-
-<div
-  id="notification"
-  class="notification hidden"
-></div>
-
-
-
-<!-- =====================================================
-     SUPABASE
-===================================================== -->
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-
-<script>
-
-/* =====================================================
-   SUPABASE CONFIG
-===================================================== */
-
-const SUPABASE_URL =
-  "https://wwsiwomvwfqrjufgyfgp.supabase.co";
-
-
-const SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_PtbeXnnu2kf5f1yTf9FKrw_hdXzNAR_";
-
-
-const supabaseClient =
-  window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
-  );
-
-
-
-/* =====================================================
-   ELEMENTS
-===================================================== */
-
-const loginScreen =
-  document.getElementById("loginScreen");
-
-const passwordRecoveryScreen =
-  document.getElementById("passwordRecoveryScreen");
-
-
-const adminDashboard =
-  document.getElementById("adminDashboard");
-
-
-const loginForm =
-  document.getElementById("loginForm");
-
-
-const loginButton =
-  document.getElementById("loginButton");
-
-const forgotPasswordButton =
-  document.getElementById("forgotPasswordButton");
-
-const passwordRecoveryForm =
-  document.getElementById("passwordRecoveryForm");
-
-const passwordRecoveryMessage =
-  document.getElementById("passwordRecoveryMessage");
-
-let passwordRecoveryActive = false;
-
-
-const loginMessage =
-  document.getElementById("loginMessage");
-
-
-const logoutButton =
-  document.getElementById("logoutButton");
-
-
-const refreshButton =
-  document.getElementById("refreshButton");
-
-
-const pendingList =
-  document.getElementById("pendingList");
-
-
-const approvedList =
-  document.getElementById("approvedList");
-
-
-const rejectedList =
-  document.getElementById("rejectedList");
-
-const feedbackPageSize = 3;
-const feedbackPages = {
-  pending: 0,
-  approved: 0,
-  rejected: 0
-};
-const feedbackByStatus = {
-  pending: [],
-  approved: [],
-  rejected: []
-};
-
-const feedbackPagination = {
-  pending: {
-    nav: document.getElementById("pendingPagination"),
-    status: document.getElementById("pendingPageStatus")
-  },
-  approved: {
-    nav: document.getElementById("approvedPagination"),
-    status: document.getElementById("approvedPageStatus")
-  },
-  rejected: {
-    nav: document.getElementById("rejectedPagination"),
-    status: document.getElementById("rejectedPageStatus")
-  }
-};
-
-
-const pendingCount =
-  document.getElementById("pendingCount");
-
-
-const approvedCount =
-  document.getElementById("approvedCount");
-
-
-const rejectedCount =
-  document.getElementById("rejectedCount");
-
-
-const pendingLabel =
-  document.getElementById("pendingLabel");
-
-
-const approvedLabel =
-  document.getElementById("approvedLabel");
-
-
-const rejectedLabel =
-  document.getElementById("rejectedLabel");
-
-
-const notification =
-  document.getElementById("notification");
-
-
-
-/* =====================================================
-   NOTIFICATION
-===================================================== */
-
-function showNotification(message) {
-
-  notification.textContent =
-    message;
-
-  notification.classList.remove(
-    "hidden"
-  );
-
-
-  setTimeout(
-    function () {
-
-      notification.classList.add(
-        "hidden"
-      );
-
-    },
-    3000
-  );
-
-}
-
-
-
-/* =====================================================
-   ESCAPE HTML
-===================================================== */
-
-function escapeHTML(value) {
-
-  return String(value).replace(
-    /[&<>"']/g,
-    function (character) {
-
-      return {
-
-        "&": "&amp;",
-
-        "<": "&lt;",
-
-        ">": "&gt;",
-
-        '"': "&quot;",
-
-        "'": "&#039;"
-
-      }[character];
-
-    }
-  );
-
-}
-
-
-
-/* =====================================================
-   STARS
-===================================================== */
-
-function getStars(rating) {
-
-  const number =
-    Number(rating) || 0;
-
-
-  return (
-    "★".repeat(number) +
-    "☆".repeat(5 - number)
-  );
-
-}
-
-
-
-/* =====================================================
-   DATE
-===================================================== */
-
-function formatDate(date) {
-
-  if (!date) {
-    return "";
-  }
-
-
-  return new Date(date)
-    .toLocaleString(
-      "en-IN",
+  <script>
+    "use strict";
+
+    /* -------------------------------------------------------
+       SUPABASE CONFIGURATION
+    ------------------------------------------------------- */
+    const SUPABASE_URL = "https://wwsiwomvwfqrjufgyfgp.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_PtbeXnnu2kf5f1yTf9FKrw_hdXzNAR_";
+
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_PUBLISHABLE_KEY,
       {
-        dateStyle: "medium",
-        timeStyle: "short"
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true
+        }
       }
     );
 
-}
+    /* -------------------------------------------------------
+       ELEMENTS AND STATE
+    ------------------------------------------------------- */
+    const $ = id => document.getElementById(id);
 
+    const loginScreen = $("loginScreen");
+    const recoveryScreen = $("passwordRecoveryScreen");
+    const dashboardScreen = $("dashboardScreen");
 
+    const loginForm = $("loginForm");
+    const recoveryForm = $("passwordRecoveryForm");
+    const feedbackRows = $("feedbackRows");
 
-/* =====================================================
-   SHOW LOGIN
-===================================================== */
+    const PAGE_SIZE = 10;
 
-function showLogin() {
+    let allFeedback = [];
+    let currentStatus = "pending";
+    let currentPage = 1;
+    let busy = false;
 
-  passwordRecoveryScreen.classList.add(
-    "hidden"
-  );
+    /* -------------------------------------------------------
+       HELPERS
+    ------------------------------------------------------- */
+    function escapeHTML(value) {
+      return String(value ?? "").replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      })[character]);
+    }
 
-  loginScreen.classList.remove(
-    "hidden"
-  );
+    function showMessage(element, message, type = "") {
+      element.textContent = message;
+      element.className = "message" + (type ? " " + type : "");
+    }
 
-  adminDashboard.classList.add(
-    "hidden"
-  );
+    function showDashboardMessage(message, type = "") {
+      const element = $("dashboardMessage");
+      element.textContent = message;
+      element.className = "notice" + (type ? " " + type : "");
+      element.hidden = !message;
+    }
 
-}
+    function showScreen(screen) {
+      loginScreen.hidden = screen !== "login";
+      recoveryScreen.hidden = screen !== "recovery";
+      dashboardScreen.hidden = screen !== "dashboard";
+    }
 
-function showPasswordRecovery() {
+    function setButtonLoading(button, loading, loadingText, normalText) {
+      button.disabled = loading;
+      button.textContent = loading ? loadingText : normalText;
+    }
 
-  passwordRecoveryActive = true;
+    function formatDate(value) {
+      if (!value) return "—";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "—";
+      return date.toLocaleString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+    }
 
-  loginScreen.classList.add(
-    "hidden"
-  );
+    function normalizeStatus(status) {
+      return ["pending", "approved", "rejected"].includes(status)
+        ? status
+        : "pending";
+    }
 
-  passwordRecoveryScreen.classList.remove(
-    "hidden"
-  );
+    function getFilteredFeedback() {
+      const query = $("searchInput").value.trim().toLowerCase();
+      const rating = $("ratingFilter").value;
 
-  adminDashboard.classList.add(
-    "hidden"
-  );
+      return allFeedback.filter(item => {
+        const statusMatches =
+          currentStatus === "all" ||
+          normalizeStatus(item.status) === currentStatus;
 
-}
+        const ratingMatches =
+          rating === "all" || Number(item.rating) === Number(rating);
 
+        const searchMatches =
+          !query ||
+          String(item.name || "").toLowerCase().includes(query) ||
+          String(item.feedback || "").toLowerCase().includes(query);
 
+        return statusMatches && ratingMatches && searchMatches;
+      });
+    }
 
-/* =====================================================
-   SHOW DASHBOARD
-===================================================== */
+    /* -------------------------------------------------------
+       AUTHORIZATION
+       admin_users.user_id must match auth.users.id.
+    ------------------------------------------------------- */
+    async function verifyAdmin(user) {
+      if (!user) return false;
 
-function showDashboard() {
+      const { data, error } = await supabaseClient
+        .from("admin_users")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
 
-  passwordRecoveryActive = false;
+      if (error) {
+        console.error("Admin verification failed:", error);
+        throw new Error(
+          "Could not verify admin access. Check the admin_users table and its access policies."
+        );
+      }
 
-  passwordRecoveryScreen.classList.add(
-    "hidden"
-  );
+      return Boolean(data);
+    }
 
-  loginScreen.classList.add(
-    "hidden"
-  );
+    async function enterDashboard(user) {
+      showScreen("dashboard");
+      showDashboardMessage("Verifying access...", "");
+      try {
+        const isAdmin = await verifyAdmin(user);
 
-  adminDashboard.classList.remove(
-    "hidden"
-  );
-
-}
-
-
-
-/* =====================================================
-   CHECK ADMIN
-===================================================== */
-
-async function checkAdmin(userId) {
-
-  const result =
-    await supabaseClient
-      .from("admin_users")
-      .select("user_id")
-      .eq(
-        "user_id",
-        userId
-      )
-      .maybeSingle();
-
-
-  if (result.error) {
-
-    console.error(
-      result.error
-    );
-
-    return false;
-
-  }
-
-
-  return !!result.data;
-
-}
-
-
-
-/* =====================================================
-   LOAD FEEDBACK
-===================================================== */
-
-async function loadFeedback() {
-
-  Object.values(feedbackPagination).forEach(
-    pagination => pagination.nav.hidden = true
-  );
-
-  pendingList.innerHTML =
-    '<div class="empty-state">Loading...</div>';
-
-  approvedList.innerHTML =
-    '<div class="empty-state">Loading...</div>';
-
-  rejectedList.innerHTML =
-    '<div class="empty-state">Loading...</div>';
-
-
-  const result =
-    await supabaseClient
-      .from("feedback")
-      .select(
-        "id,name,rating,feedback,permission,status,created_at"
-      )
-      .order(
-        "created_at",
-        {
-          ascending: false
+        if (!isAdmin) {
+          await supabaseClient.auth.signOut();
+          showScreen("login");
+          showMessage(
+            $("loginMessage"),
+            "This account is not authorized to access the feedback dashboard.",
+            "error"
+          );
+          return;
         }
-      );
 
+        showDashboardMessage("");
+        await loadFeedback();
+      } catch (error) {
+        console.error(error);
+        showScreen("login");
+        showMessage(
+          $("loginMessage"),
+          error.message || "Unable to verify admin access.",
+          "error"
+        );
+      }
+    }
 
-  if (result.error) {
+    /* -------------------------------------------------------
+       SIGN IN
+    ------------------------------------------------------- */
+    loginForm.addEventListener("submit", async event => {
+      event.preventDefault();
 
-    console.error(
-      result.error
-    );
+      if (busy) return;
+      busy = true;
 
+      const button = $("loginButton");
+      setButtonLoading(button, true, "SIGNING IN...", "SIGN IN");
+      showMessage($("loginMessage"), "");
 
-    pendingList.innerHTML =
-      '<div class="empty-state">Could not load feedback.</div>';
+      try {
+        const email = $("loginEmail").value.trim();
+        const password = $("loginPassword").value;
 
-    approvedList.innerHTML =
-      '<div class="empty-state">Could not load feedback.</div>';
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+          email,
+          password
+        });
 
-    rejectedList.innerHTML =
-      '<div class="empty-state">Could not load feedback.</div>';
+        if (error) throw error;
+        await enterDashboard(data.user);
+      } catch (error) {
+        console.error("Login error:", error);
+        showMessage(
+          $("loginMessage"),
+          error.message || "Sign-in failed. Please try again.",
+          "error"
+        );
+      } finally {
+        setButtonLoading(button, false, "SIGNING IN...", "SIGN IN");
+        busy = false;
+      }
+    });
 
-    showNotification(
-      "Could not load feedback."
-    );
+    /* -------------------------------------------------------
+       PASSWORD RECOVERY
+    ------------------------------------------------------- */
+    $("showRecoveryButton").addEventListener("click", () => {
+      $("recoveryEmail").value = $("loginEmail").value.trim();
+      showMessage($("recoveryMessage"), "");
+      showScreen("recovery");
+    });
 
-    return;
+    $("backToLoginButton").addEventListener("click", () => {
+      showMessage($("loginMessage"), "");
+      showScreen("login");
+    });
 
-  }
+    recoveryForm.addEventListener("submit", async event => {
+      event.preventDefault();
 
+      const button = $("recoveryButton");
+      setButtonLoading(button, true, "SENDING...", "SEND RESET LINK");
+      showMessage($("recoveryMessage"), "");
 
-  const feedback =
-    result.data || [];
+      try {
+        const email = $("recoveryEmail").value.trim();
+        const redirectTo = new URL("feedback-admin.html", window.location.href).href;
 
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+          redirectTo
+        });
 
-  const pending =
-    feedback.filter(
-      item =>
-        item.status === "pending"
-    );
+        if (error) throw error;
 
+        showMessage(
+          $("recoveryMessage"),
+          "If this email is registered, a password reset link has been sent.",
+          "success"
+        );
+      } catch (error) {
+        console.error("Password recovery error:", error);
+        showMessage(
+          $("recoveryMessage"),
+          error.message || "Could not send the reset email.",
+          "error"
+        );
+      } finally {
+        setButtonLoading(button, false, "SENDING...", "SEND RESET LINK");
+      }
+    });
 
-  const approved =
-    feedback.filter(
-      item =>
-        item.status === "approved"
-    );
+    /* -------------------------------------------------------
+       LOAD FEEDBACK
+    ------------------------------------------------------- */
+    async function loadFeedback() {
+      feedbackRows.innerHTML =
+        '<tr><td colspan="6" class="empty-state">Loading feedback...</td></tr>';
 
+      showDashboardMessage("");
 
-  const rejected =
-    feedback.filter(
-      item =>
-        item.status === "rejected"
-    );
+      try {
+        const { data, error } = await supabaseClient
+          .from("feedback")
+          .select("id,name,rating,feedback,status,created_at")
+          .order("created_at", { ascending: false });
 
-  feedbackByStatus.pending = pending;
-  feedbackByStatus.approved = approved;
-  feedbackByStatus.rejected = rejected;
+        if (error) throw error;
 
+        allFeedback = data || [];
+        updateStats();
+        renderFeedback();
+      } catch (error) {
+        console.error("Loading feedback failed:", error);
 
-  /* COUNTS */
+        feedbackRows.innerHTML =
+          '<tr><td colspan="6" class="empty-state">Unable to load feedback. Check your Supabase permissions and table columns.</td></tr>';
 
-  pendingCount.textContent =
-    pending.length;
+        showDashboardMessage(
+          error.message || "Could not load feedback.",
+          "error"
+        );
+      }
+    }
 
-  approvedCount.textContent =
-    approved.length;
+    function updateStats() {
+      const total = allFeedback.length;
+      const pending = allFeedback.filter(item =>
+        normalizeStatus(item.status) === "pending"
+      ).length;
+      const approved = allFeedback.filter(item =>
+        normalizeStatus(item.status) === "approved"
+      ).length;
+      const rejected = allFeedback.filter(item =>
+        normalizeStatus(item.status) === "rejected"
+      ).length;
 
-  rejectedCount.textContent =
-    rejected.length;
+      $("totalCount").textContent = total;
+      $("pendingCount").textContent = pending;
+      $("approvedCount").textContent = approved;
+      $("rejectedCount").textContent = rejected;
 
+      $("pendingTabCount").textContent = pending;
+      $("approvedTabCount").textContent = approved;
+      $("rejectedTabCount").textContent = rejected;
+      $("allTabCount").textContent = total;
+    }
 
-  pendingLabel.textContent =
-    `${pending.length} submission${pending.length === 1 ? "" : "s"}`;
+    /* -------------------------------------------------------
+       RENDER AND PAGINATION
+    ------------------------------------------------------- */
+    function renderFeedback() {
+      const filtered = getFilteredFeedback();
+      const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
+      currentPage = Math.min(currentPage, pageCount);
 
-  approvedLabel.textContent =
-    `${approved.length} submission${approved.length === 1 ? "" : "s"}`;
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const pageItems = filtered.slice(start, start + PAGE_SIZE);
 
+      if (!pageItems.length) {
+        feedbackRows.innerHTML =
+          '<tr><td colspan="6" class="empty-state">No feedback matches this view.</td></tr>';
+      } else {
+        feedbackRows.innerHTML = pageItems.map(item => {
+          const status = normalizeStatus(item.status);
+          const rating = Math.max(0, Math.min(5, Number(item.rating) || 0));
 
-  rejectedLabel.textContent =
-    `${rejected.length} submission${rejected.length === 1 ? "" : "s"}`;
+          let actionButtons = "";
 
-
-  /* RENDER */
-
-  renderFeedback(
-    pending,
-    pendingList,
-    "pending",
-    feedbackPagination.pending
-  );
-
-
-  renderFeedback(
-    approved,
-    approvedList,
-    "approved",
-    feedbackPagination.approved
-  );
-
-
-  renderFeedback(
-    rejected,
-    rejectedList,
-    "rejected",
-    feedbackPagination.rejected
-  );
-
-}
-
-
-
-/* =====================================================
-   RENDER FEEDBACK
-===================================================== */
-
-function renderFeedback(
-  items,
-  container,
-  status,
-  pagination
-) {
-
-  if (!items.length) {
-
-    const message =
-      status === "pending"
-        ? "No pending feedback."
-        : status === "approved"
-          ? "No approved feedback yet."
-          : "No rejected feedback.";
-
-    container.innerHTML =
-      `<div class="empty-state">${message}</div>`;
-
-    pagination.nav.hidden = true;
-    return;
-
-  }
-
-  const pageCount = Math.ceil(items.length / feedbackPageSize);
-  feedbackPages[status] = Math.min(feedbackPages[status], pageCount - 1);
-  const startIndex = feedbackPages[status] * feedbackPageSize;
-  const visibleItems = items.slice(startIndex, startIndex + feedbackPageSize);
-  const endIndex = startIndex + visibleItems.length;
-
-  pagination.nav.hidden = pageCount <= 1;
-  pagination.status.textContent =
-    `Page ${feedbackPages[status] + 1} of ${pageCount} · Reviews ${startIndex + 1}–${endIndex} of ${items.length}`;
-  pagination.nav.querySelector('[data-page-direction="-1"]').disabled =
-    feedbackPages[status] === 0;
-  pagination.nav.querySelector('[data-page-direction="1"]').disabled =
-    feedbackPages[status] >= pageCount - 1;
-
-
-  container.innerHTML =
-    visibleItems
-      .map(
-        function (item) {
-
-          let actions = "";
-
-
-          /* PENDING ACTIONS */
-
-          if (status === "pending") {
-
-            actions = `
-
-              <button
-                type="button"
-                class="approve-button"
-                data-feedback-action="approve"
-                data-feedback-id="${escapeHTML(item.id)}"
-              >
-                APPROVE
-              </button>
-
-              <button
-                type="button"
-                class="reject-button"
-                data-feedback-action="reject"
-                data-feedback-id="${escapeHTML(item.id)}"
-              >
-                REJECT
-              </button>
-
-              <button
-                type="button"
-                class="delete-button"
-                data-feedback-action="delete"
-                data-feedback-id="${escapeHTML(item.id)}"
-              >
-                DELETE
-              </button>
-
-            `;
-
+          if (status !== "approved") {
+            actionButtons +=
+              '<button class="btn btn-green" data-action="approve" data-id="' +
+              escapeHTML(item.id) + '">Approve</button>';
           }
 
-
-          /* APPROVED ACTIONS */
-
-          if (status === "approved") {
-
-            actions = `
-
-              <button
-                type="button"
-                class="reject-button"
-                data-feedback-action="reject"
-                data-feedback-id="${escapeHTML(item.id)}"
-              >
-                REJECT
-              </button>
-
-              <button
-                type="button"
-                class="delete-button"
-                data-feedback-action="delete"
-                data-feedback-id="${escapeHTML(item.id)}"
-              >
-                DELETE
-              </button>
-
-            `;
-
+          if (status !== "rejected") {
+            actionButtons +=
+              '<button class="btn btn-yellow" data-action="reject" data-id="' +
+              escapeHTML(item.id) + '">Reject</button>';
           }
 
-
-          /* REJECTED ACTIONS */
-
-          if (status === "rejected") {
-
-            actions = `
-
-              <button
-                type="button"
-                class="approve-button"
-                data-feedback-action="approve"
-                data-feedback-id="${escapeHTML(item.id)}"
-              >
-                APPROVE
-              </button>
-
-              <button
-                type="button"
-                class="delete-button"
-                data-feedback-action="delete"
-                data-feedback-id="${escapeHTML(item.id)}"
-              >
-                DELETE
-              </button>
-
-            `;
-
-          }
-
+          actionButtons +=
+            '<button class="btn btn-danger" data-action="delete" data-id="' +
+            escapeHTML(item.id) + '">Delete</button>';
 
           return `
+            <tr>
+              <td><span class="client-name">${escapeHTML(item.name || "Anonymous")}</span></td>
+              <td><span class="stars" aria-label="${rating} out of 5 stars">${"★".repeat(rating)}${"☆".repeat(5-rating)}</span></td>
+              <td><div class="feedback-text">${escapeHTML(item.feedback || "")}</div></td>
+              <td>${escapeHTML(formatDate(item.created_at))}</td>
+              <td><span class="status status-${status}">${escapeHTML(status)}</span></td>
+              <td><div class="actions">${actionButtons}</div></td>
+            </tr>`;
+        }).join("");
+      }
 
-            <article class="feedback-card">
+      $("pageInfo").textContent = filtered.length
+        ? `Showing ${start + 1}–${Math.min(start + PAGE_SIZE, filtered.length)} of ${filtered.length}`
+        : "0 results";
 
-              <div class="feedback-top">
+      $("previousPageButton").disabled = currentPage <= 1;
+      $("nextPageButton").disabled = currentPage >= pageCount;
+    }
 
-                <div>
+    document.querySelectorAll("[data-status]").forEach(button => {
+      button.addEventListener("click", () => {
+        currentStatus = button.dataset.status;
+        currentPage = 1;
 
-                  <div class="feedback-name">
+        document.querySelectorAll("[data-status]").forEach(tab => {
+          const active = tab === button;
+          tab.classList.toggle("active", active);
+          tab.setAttribute("aria-selected", String(active));
+        });
 
-                    ${escapeHTML(item.name)}
-
-                  </div>
-
-                  <div class="feedback-date">
-
-                    ${formatDate(item.created_at)}
-
-                  </div>
-
-                </div>
-
-
-                <div class="rating">
-
-                  ${getStars(item.rating)}
-
-                </div>
-
-              </div>
-
-
-              <div>
-
-                <span
-                  class="status-badge status-${status}"
-                >
-                  ${status.toUpperCase()}
-                </span>
-
-              </div>
-
-
-              <div class="feedback-text">${escapeHTML(String(item.feedback || "").trim())}</div>
-
-
-              <div class="feedback-actions">
-
-                ${actions}
-
-              </div>
-
-            </article>
-
-          `;
-
-        }
-      )
-      .join("");
-
-}
-
-document.querySelectorAll(".feedback-pagination").forEach(
-  function (pagination) {
-    pagination.addEventListener("click", function (event) {
-      const button = event.target.closest("[data-feedback-page][data-page-direction]");
-      if (!button || button.disabled) return;
-
-      const status = button.dataset.feedbackPage;
-      const direction = Number(button.dataset.pageDirection);
-      if (!Object.prototype.hasOwnProperty.call(feedbackPages, status)) return;
-
-      const pageCount = Math.ceil(feedbackByStatus[status].length / feedbackPageSize);
-      feedbackPages[status] = Math.max(
-        0,
-        Math.min(feedbackPages[status] + direction, pageCount - 1)
-      );
-
-      const containers = {
-        pending: pendingList,
-        approved: approvedList,
-        rejected: rejectedList
-      };
-      renderFeedback(
-        feedbackByStatus[status],
-        containers[status],
-        status,
-        feedbackPagination[status]
-      );
-      document.getElementById(`${status}FeedbackSection`).scrollIntoView({
-        behavior: "smooth",
-        block: "start"
+        renderFeedback();
       });
     });
-  }
-);
 
-const feedbackIdPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    $("searchInput").addEventListener("input", () => {
+      currentPage = 1;
+      renderFeedback();
+    });
 
-const feedbackActionHandlers = {
-  approve: approveFeedback,
-  reject: rejectFeedback,
-  delete: deleteFeedback
-};
+    $("ratingFilter").addEventListener("change", () => {
+      currentPage = 1;
+      renderFeedback();
+    });
 
-[pendingList, approvedList, rejectedList].forEach(
-  function (container) {
-    container.addEventListener("click", function (event) {
-      if (!(event.target instanceof Element)) return;
+    $("clearFiltersButton").addEventListener("click", () => {
+      $("searchInput").value = "";
+      $("ratingFilter").value = "all";
+      currentPage = 1;
+      renderFeedback();
+    });
 
-      const button = event.target.closest("button[data-feedback-action][data-feedback-id]");
-      if (!button || !container.contains(button)) return;
+    $("previousPageButton").addEventListener("click", () => {
+      currentPage = Math.max(1, currentPage - 1);
+      renderFeedback();
+    });
 
-      const action = button.dataset.feedbackAction;
-      const id = button.dataset.feedbackId;
-      if (!feedbackIdPattern.test(id)) {
-        console.error("Invalid feedback ID in action button.");
+    $("nextPageButton").addEventListener("click", () => {
+      currentPage += 1;
+      renderFeedback();
+    });
+
+    $("refreshButton").addEventListener("click", loadFeedback);
+
+    /* -------------------------------------------------------
+       APPROVE / REJECT / DELETE
+    ------------------------------------------------------- */
+    feedbackRows.addEventListener("click", async event => {
+      const button = event.target.closest("button[data-action]");
+      if (!button || button.disabled) return;
+
+      const action = button.dataset.action;
+      const id = button.dataset.id;
+      const item = allFeedback.find(feedback => String(feedback.id) === String(id));
+
+      if (!item) {
+        showDashboardMessage("That feedback entry could not be found.", "error");
         return;
       }
 
-      if (!Object.prototype.hasOwnProperty.call(feedbackActionHandlers, action)) return;
+      if (action === "delete") {
+        const label = item.name || "this client";
+        if (!confirm(`Permanently delete feedback from ${label}? This cannot be undone.`)) {
+          return;
+        }
+      }
 
-      const handler = feedbackActionHandlers[action];
-      if (typeof handler === "function") void handler(id);
+      if (action === "reject" &&
+          !confirm("Reject this feedback? It will not be shown on the website.")) {
+        return;
+      }
+
+      if (action === "approve" &&
+          !confirm("Approve this feedback and allow it to appear on the website?")) {
+        return;
+      }
+
+      button.disabled = true;
+      showDashboardMessage("");
+
+      try {
+        let result;
+
+        if (action === "delete") {
+          result = await supabaseClient
+            .from("feedback")
+            .delete()
+            .eq("id", id);
+        } else {
+          result = await supabaseClient
+            .from("feedback")
+            .update({ status: action === "approve" ? "approved" : "rejected" })
+            .eq("id", id);
+        }
+
+        if (result.error) throw result.error;
+
+        const messages = {
+          approve: "Feedback approved.",
+          reject: "Feedback rejected.",
+          delete: "Feedback permanently deleted."
+        };
+
+        showDashboardMessage(messages[action], "success");
+        await loadFeedback();
+      } catch (error) {
+        console.error(`Feedback ${action} failed:`, error);
+        showDashboardMessage(
+          error.message || `Could not ${action} this feedback.`,
+          "error"
+        );
+        button.disabled = false;
+      }
     });
-  }
-);
 
-
-
-/* =====================================================
-   APPROVE FEEDBACK
-===================================================== */
-
-async function approveFeedback(id) {
-
-  const confirmed =
-    confirm(
-      "Approve this feedback and publish it on the website?"
-    );
-
-
-  if (!confirmed) {
-    return;
-  }
-
-
-  const result =
-    await supabaseClient
-      .from("feedback")
-      .update({
-        status: "approved"
-      })
-      .eq(
-        "id",
-        id
-      );
-
-
-  if (result.error) {
-
-    console.error(
-      result.error
-    );
-
-    alert(
-      "Could not approve the feedback."
-    );
-
-    return;
-
-  }
-
-
-  showNotification(
-    "Feedback approved."
-  );
-
-
-  await loadFeedback();
-
-}
-
-
-
-/* =====================================================
-   REJECT FEEDBACK
-===================================================== */
-
-async function rejectFeedback(id) {
-
-  const confirmed =
-    confirm(
-      "Reject this feedback?"
-    );
-
-
-  if (!confirmed) {
-    return;
-  }
-
-
-  const result =
-    await supabaseClient
-      .from("feedback")
-      .update({
-        status: "rejected"
-      })
-      .eq(
-        "id",
-        id
-      );
-
-
-  if (result.error) {
-
-    console.error(
-      result.error
-    );
-
-    alert(
-      "Could not reject the feedback."
-    );
-
-    return;
-
-  }
-
-
-  showNotification(
-    "Feedback rejected."
-  );
-
-
-  await loadFeedback();
-
-}
-
-
-
-/* =====================================================
-   DELETE FEEDBACK
-===================================================== */
-
-async function deleteFeedback(id) {
-
-  const confirmed =
-    confirm(
-      "Are you sure you want to permanently delete this feedback?\n\nThis cannot be undone."
-    );
-
-
-  if (!confirmed) {
-    return;
-  }
-
-
-  const result =
-    await supabaseClient
-      .from("feedback")
-      .delete()
-      .eq(
-        "id",
-        id
-      );
-
-
-  if (result.error) {
-
-    console.error(
-      result.error
-    );
-
-    alert(
-      "Could not delete the feedback."
-    );
-
-    return;
-
-  }
-
-
-  showNotification(
-    "Feedback permanently deleted."
-  );
-
-
-  await loadFeedback();
-
-}
-
-
-
-/* =====================================================
-   LOGIN
-===================================================== */
-
-loginForm.addEventListener(
-  "submit",
-  async function (event) {
-
-    event.preventDefault();
-
-
-    loginMessage.textContent =
-      "Signing in...";
-
-
-    loginButton.disabled =
-      true;
-
-
-    const email =
-      document.getElementById(
-        "loginEmail"
-      ).value.trim();
-
-
-    const password =
-      document.getElementById(
-        "loginPassword"
-      ).value;
-
-
-    const result =
-      await supabaseClient.auth
-        .signInWithPassword({
-          email: email,
-          password: password
-        });
-
-
-    loginButton.disabled =
-      false;
-
-
-    if (result.error) {
-
-      console.error(
-        result.error
-      );
-
-
-      loginMessage.textContent =
-        result.error.message;
-
-      return;
-
+    /* -------------------------------------------------------
+       LOG OUT AND SESSION RESTORATION
+    ------------------------------------------------------- */
+    $("logoutButton").addEventListener("click", async () => {
+      const { error } = await supabaseClient.auth.signOut();
+
+      if (error) {
+        showDashboardMessage(error.message || "Could not sign out.", "error");
+        return;
+      }
+
+      allFeedback = [];
+      loginForm.reset();
+      showMessage($("loginMessage"), "");
+      showScreen("login");
+    });
+
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        showScreen("recovery");
+        showMessage(
+          $("recoveryMessage"),
+          "Password recovery session detected. Follow the link's instructions to update your password.",
+          "success"
+        );
+      }
+    });
+
+    async function initialize() {
+      showScreen("login");
+
+      try {
+        const { data, error } = await supabaseClient.auth.getSession();
+        if (error) throw error;
+
+        if (data.session?.user) {
+          await enterDashboard(data.session.user);
+        }
+      } catch (error) {
+        console.error("Session initialization failed:", error);
+        showMessage(
+          $("loginMessage"),
+          "Could not restore your session. Please sign in again.",
+          "error"
+        );
+      }
     }
 
-
-    const user =
-      result.data.user;
-
-
-    if (!user) {
-
-      loginMessage.textContent =
-        "Login failed.";
-
-      return;
-
-    }
-
-
-    const isAdmin =
-      await checkAdmin(
-        user.id
-      );
-
-
-    if (!isAdmin) {
-
-      await supabaseClient.auth.signOut();
-
-
-      loginMessage.textContent =
-        "Access denied. This account is not an administrator.";
-
-      return;
-
-    }
-
-
-    loginMessage.textContent =
-      "";
-
-
-    showDashboard();
-
-
-    await loadFeedback();
-
-  }
-);
-
-
-
-passwordRecoveryForm.addEventListener(
-  "submit",
-  async function (event) {
-    event.preventDefault();
-
-    const password = document.getElementById("newAdminPassword").value;
-    const confirmation = document.getElementById("confirmAdminPassword").value;
-    if (password !== confirmation) {
-      passwordRecoveryMessage.textContent = "The passwords do not match.";
-      return;
-    }
-
-    const button = document.getElementById("saveAdminPasswordButton");
-    button.disabled = true;
-    button.textContent = "UPDATING...";
-    passwordRecoveryMessage.textContent = "";
-
-    try {
-      const { error } = await supabaseClient.auth.updateUser({ password });
-      if (error) throw error;
-
-      const { error: signOutError } = await supabaseClient.auth.signOut();
-      if (signOutError) throw signOutError;
-
-      passwordRecoveryForm.reset();
-      showLogin();
-      loginMessage.textContent =
-        "Password updated. Sign in with your new password.";
-    } catch (error) {
-      console.error(error);
-      passwordRecoveryMessage.textContent =
-        "Could not update your password. Request a new reset email and try again.";
-    } finally {
-      button.disabled = false;
-      button.textContent = "UPDATE PASSWORD";
-    }
-  }
-);
-
-
-
-/* =====================================================
-   LOGOUT
-===================================================== */
-
-logoutButton.addEventListener(
-  "click",
-  async function () {
-
-    await supabaseClient.auth.signOut();
-
-    showLogin();
-
-    loginMessage.textContent =
-      "You have been signed out.";
-
-  }
-);
-
-
-
-/* =====================================================
-   REFRESH
-===================================================== */
-
-refreshButton.addEventListener(
-  "click",
-  async function () {
-
-    refreshButton.disabled =
-      true;
-
-    refreshButton.textContent =
-      "REFRESHING...";
-
-
-    await loadFeedback();
-
-
-    refreshButton.disabled =
-      false;
-
-    refreshButton.textContent =
-      "REFRESH";
-
-  }
-);
-
-
-
-/* =====================================================
-   CHECK EXISTING SESSION
-===================================================== */
-
-async function checkExistingSession() {
-
-  const result =
-    await supabaseClient.auth
-      .getSession();
-
-
-  if (result.error) {
-
-    console.error(
-      result.error
-    );
-
-    showLogin();
-
-    return;
-
-  }
-
-
-  const session =
-    result.data.session;
-
-  if (passwordRecoveryActive) {
-
-    showPasswordRecovery();
-
-    return;
-
-  }
-
-
-  if (!session) {
-
-    showLogin();
-
-    return;
-
-  }
-
-
-  const isAdmin =
-    await checkAdmin(
-      session.user.id
-    );
-
-
-  if (!isAdmin) {
-
-    await supabaseClient.auth.signOut();
-
-    showLogin();
-
-    loginMessage.textContent =
-      "Access denied. This account is not an administrator.";
-
-    return;
-
-  }
-
-  if (passwordRecoveryActive) {
-
-    showPasswordRecovery();
-
-    return;
-
-  }
-
-
-  showDashboard();
-
-
-  await loadFeedback();
-
-}
-
-
-
-/* =====================================================
-   AUTH STATE CHANGE
-===================================================== */
-
-supabaseClient.auth.onAuthStateChange(
-  async function (event, session) {
-
-    if (event === "PASSWORD_RECOVERY") {
-
-      showPasswordRecovery();
-
-      return;
-
-    }
-
-    if (
-      event === "SIGNED_OUT"
-    ) {
-
-      showLogin();
-
-    }
-
-  }
-);
-
-
-
-/* =====================================================
-   START
-===================================================== */
-
-checkExistingSession();
-
-</script>
-
-
+    initialize();
+  </script>
 </body>
-
 </html>
