@@ -27,6 +27,7 @@
   let clientPage = 0;
   let clientStatusFilter = "all";
   let passwordRecoveryActive = false;
+
   const clientPageSize = 3;
 
   function msg(el, text, kind) {
@@ -67,9 +68,20 @@
   function showDashboard(isLoggedIn) {
     loginPanel.classList.toggle("rw-hidden", isLoggedIn);
     dashboardPanel.classList.toggle("rw-hidden", !isLoggedIn);
-    $("trainerSessionActions").classList.toggle("rw-hidden", !isLoggedIn);
-    $("refreshAssessmentsButton").classList.toggle("rw-hidden", !isLoggedIn);
-    $("signOutButton").classList.toggle("rw-hidden", !isLoggedIn);
+
+    const sessionActions = $("trainerSessionActions");
+    const refreshButton = $("refreshAssessmentsButton");
+    const signOutButton = $("signOutButton");
+
+    if (sessionActions) {
+      sessionActions.classList.toggle("rw-hidden", !isLoggedIn);
+    }
+    if (refreshButton) {
+      refreshButton.classList.toggle("rw-hidden", !isLoggedIn);
+    }
+    if (signOutButton) {
+      signOutButton.classList.toggle("rw-hidden", !isLoggedIn);
+    }
   }
 
   function showPasswordRecovery(isActive) {
@@ -77,15 +89,19 @@
     passwordRecoveryPanel.classList.toggle("rw-hidden", !isActive);
     loginPanel.classList.toggle("rw-hidden", isActive);
     dashboardPanel.classList.add("rw-hidden");
-    $("trainerSessionActions").classList.add("rw-hidden");
-    $("refreshAssessmentsButton").classList.add("rw-hidden");
-    $("signOutButton").classList.add("rw-hidden");
+
+    const sessionActions = $("trainerSessionActions");
+    const refreshButton = $("refreshAssessmentsButton");
+    const signOutButton = $("signOutButton");
+
+    if (sessionActions) sessionActions.classList.add("rw-hidden");
+    if (refreshButton) refreshButton.classList.add("rw-hidden");
+    if (signOutButton) signOutButton.classList.add("rw-hidden");
   }
 
   function formatDate(value) {
     if (!value) return "—";
 
-    // Parse date-only strings locally to avoid timezone shifts.
     const d = /^\d{4}-\d{2}-\d{2}$/.test(String(value))
       ? new Date(value + "T00:00:00")
       : new Date(value);
@@ -146,7 +162,6 @@
     style.id = "rwDashboardMobileStyles";
 
     style.textContent = `
-      /* Training status colors */
       .rw-status-badge {
         display: inline-flex;
         align-items: center;
@@ -183,7 +198,6 @@
         color: #374151;
       }
 
-      /* Client name */
       .rw-client-button {
         display: inline-block;
         width: 100%;
@@ -283,7 +297,6 @@
         font-weight: 500;
       }
 
-      /* Expandable assessment sections */
       .rw-assessment-section {
         border: 1px solid #dce4f2;
         border-radius: 12px;
@@ -341,7 +354,6 @@
         min-height: 0;
       }
 
-      /* Mobile dashboard */
       @media (max-width: 700px) {
         #dashboardPanel {
           display: grid;
@@ -407,8 +419,8 @@
         }
 
         .rw-detail-header-actions {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
+          display: flex;
+          flex-wrap: wrap;
           width: 100%;
           gap: 8px;
         }
@@ -515,9 +527,14 @@
 
   function getFilteredAssessments() {
     const q = searchInput.value.trim().toLowerCase();
+
     return allAssessments.filter(a => {
-      if (clientStatusFilter !== "all" &&
-          (a.training_status || "Lead") !== clientStatusFilter) return false;
+      if (
+        clientStatusFilter !== "all" &&
+        (a.training_status || "Lead") !== clientStatusFilter
+      ) {
+        return false;
+      }
 
       const code =
         "RWF-" + String(a.client_number || 0).padStart(6, "0");
@@ -534,9 +551,12 @@
 
   function renderRows() {
     const filtered = getFilteredAssessments();
-    const countByStatus = status => allAssessments.filter(
-      a => (a.training_status || "Lead") === status
-    ).length;
+
+    const countByStatus = status =>
+      allAssessments.filter(
+        a => (a.training_status || "Lead") === status
+      ).length;
+
     $("totalClientCount").textContent = String(allAssessments.length);
     $("activeClientCount").textContent = String(countByStatus("Active"));
     $("onHoldClientCount").textContent = String(countByStatus("On hold"));
@@ -551,21 +571,31 @@
 
     const pageCount = Math.ceil(filtered.length / clientPageSize);
     clientPage = Math.min(clientPage, Math.max(0, pageCount - 1));
+
     const visible = filtered.slice(
       clientPage * clientPageSize,
       (clientPage + 1) * clientPageSize
     );
 
     const clientCount = $("clientCount");
+
     if (clientCount) {
-      const firstVisible = filtered.length ? clientPage * clientPageSize + 1 : 0;
-      const lastVisible = Math.min((clientPage + 1) * clientPageSize, filtered.length);
+      const firstVisible = filtered.length
+        ? clientPage * clientPageSize + 1
+        : 0;
+      const lastVisible = Math.min(
+        (clientPage + 1) * clientPageSize,
+        filtered.length
+      );
+
       const filterLabel = clientStatusFilter === "all"
         ? "all statuses"
         : clientStatusFilter;
+
       clientCount.textContent =
         `${filtered.length} ${filterLabel} client record(s) · Showing ${firstVisible}–${lastVisible}`;
     }
+
     clientPagination.classList.toggle("rw-hidden", pageCount <= 1);
     $("previousClients").disabled = clientPage === 0;
     $("nextClients").disabled = clientPage >= pageCount - 1;
@@ -573,17 +603,22 @@
       pageCount ? `Page ${clientPage + 1} of ${pageCount}` : "No pages";
 
     addStyles();
+
     if (!filtered.length) {
-      const message = allAssessments.length && clientStatusFilter !== "all"
-        ? `No ${escapeHtml(clientStatusFilter.toLowerCase())} clients match your search.`
-        : "No matching clients found.";
-      clientRows.innerHTML = `<p class="rw-small">${message}</p>`;
+      const emptyMessage =
+        allAssessments.length && clientStatusFilter !== "all"
+          ? `No ${escapeHtml(clientStatusFilter.toLowerCase())} clients match your search.`
+          : "No matching clients found.";
+
+      clientRows.innerHTML =
+        `<p class="rw-small">${emptyMessage}</p>`;
       return;
     }
 
     clientRows.innerHTML = visible.map(a => {
       const d = a.assessment_data || {};
       const goal = d.main_goal || "—";
+
       const code =
         "RWF-" + String(a.client_number || 0).padStart(6, "0");
 
@@ -651,14 +686,17 @@
 
       const count = $("clientCount");
       if (count) count.textContent = "Could not load";
+
       [
         "totalClientCount",
         "activeClientCount",
         "onHoldClientCount",
         "completedClientCount"
-      ].forEach(id => { $(id).textContent = "—"; });
-      clientPagination.classList.add("rw-hidden");
+      ].forEach(id => {
+        $(id).textContent = "—";
+      });
 
+      clientPagination.classList.add("rw-hidden");
       return;
     }
 
@@ -669,6 +707,7 @@
 
   function detailItem(label, value) {
     if (Array.isArray(value)) value = value.join(", ");
+
     if (value === null || value === undefined || value === "") {
       value = "—";
     }
@@ -742,6 +781,7 @@
     if (!selected) return;
 
     const d = selected.assessment_data || {};
+
     const clientCode =
       "RWF-" + String(selected.client_number || 0).padStart(6, "0");
 
@@ -882,12 +922,15 @@
     `).join("");
 
     detailPanel.classList.remove("rw-hidden");
+
     const isMobile = mobileLayout.matches;
     detailPanel.setAttribute("aria-modal", String(isMobile));
     document.body.classList.toggle("rw-detail-open", isMobile);
     $("detailScrollArea").scrollTop = 0;
-    if (isMobile) $("closeDetail").focus();
-    if (!isMobile) {
+
+    if (isMobile) {
+      $("closeDetail").focus();
+    } else {
       detailPanel.scrollIntoView({
         behavior: "smooth",
         block: "start"
@@ -932,6 +975,7 @@
 
   $("forgotPasswordButton").addEventListener("click", async function () {
     const email = $("email").value.trim();
+
     if (!email) {
       msg(loginMessage, "Enter your trainer email address first.", "error");
       $("email").focus();
@@ -944,9 +988,11 @@
 
     try {
       supabaseClient = supabaseClient || getClient();
+
       const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
         redirectTo: "https://rawwayfit.in/trainer.html"
       });
+
       if (error) throw error;
 
       msg(
@@ -956,7 +1002,11 @@
       );
     } catch (error) {
       console.error(error);
-      msg(loginMessage, "Unable to start password reset right now. Please try again later.", "error");
+      msg(
+        loginMessage,
+        "Unable to start password reset right now. Please try again later.",
+        "error"
+      );
     } finally {
       button.disabled = false;
     }
@@ -964,7 +1014,9 @@
 
   passwordRecoveryForm.addEventListener("submit", async function (event) {
     event.preventDefault();
+
     const password = $("newPassword").value;
+
     if (password !== $("confirmNewPassword").value) {
       msg($("passwordRecoveryMessage"), "The passwords do not match.", "error");
       return;
@@ -985,10 +1037,19 @@
       passwordRecoveryForm.reset();
       showPasswordRecovery(false);
       showDashboard(false);
-      msg(loginMessage, "Password updated. Sign in with your new password.", "success");
+
+      msg(
+        loginMessage,
+        "Password updated. Sign in with your new password.",
+        "success"
+      );
     } catch (error) {
       console.error(error);
-      msg($("passwordRecoveryMessage"), "Could not update your password. Request a new reset email and try again.", "error");
+      msg(
+        $("passwordRecoveryMessage"),
+        "Could not update your password. Request a new reset email and try again.",
+        "error"
+      );
     } finally {
       button.disabled = false;
       button.textContent = "Update password";
@@ -1009,9 +1070,11 @@
       selected = null;
       clientPage = 0;
       clientStatusFilter = "all";
+
       detailPanel.classList.add("rw-hidden");
       detailPanel.setAttribute("aria-modal", "false");
       document.body.classList.remove("rw-detail-open");
+
       showDashboard(false);
     } catch (error) {
       console.error(error);
@@ -1041,12 +1104,16 @@
 
   $("previousClients").addEventListener("click", function () {
     if (clientPage === 0) return;
+
     clientPage -= 1;
     renderRows();
   });
 
   $("nextClients").addEventListener("click", function () {
-    if ((clientPage + 1) * clientPageSize >= getFilteredAssessments().length) return;
+    if ((clientPage + 1) * clientPageSize >= getFilteredAssessments().length) {
+      return;
+    }
+
     clientPage += 1;
     renderRows();
   });
@@ -1061,6 +1128,7 @@
 
   clientRows.addEventListener("click", function (event) {
     const button = event.target.closest("[data-id]");
+
     if (button) {
       lastClientTrigger = button;
       openAssessment(button.dataset.id);
@@ -1071,31 +1139,52 @@
     detailPanel.classList.add("rw-hidden");
     detailPanel.setAttribute("aria-modal", "false");
     document.body.classList.remove("rw-detail-open");
-    if (lastClientTrigger && lastClientTrigger.isConnected) lastClientTrigger.focus();
+
+    if (lastClientTrigger && lastClientTrigger.isConnected) {
+      lastClientTrigger.focus();
+    }
   });
 
   mobileLayout.addEventListener("change", function (event) {
     renderRows();
+
     const isOpen = !detailPanel.classList.contains("rw-hidden");
     detailPanel.setAttribute("aria-modal", String(event.matches && isOpen));
-    document.body.classList.toggle("rw-detail-open", event.matches && isOpen);
-    if (event.matches && isOpen) $("closeDetail").focus();
+    document.body.classList.toggle(
+      "rw-detail-open",
+      event.matches && isOpen
+    );
+
+    if (event.matches && isOpen) {
+      $("closeDetail").focus();
+    }
   });
 
   detailPanel.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" && detailPanel.getAttribute("aria-modal") === "true") {
+    if (
+      event.key === "Escape" &&
+      detailPanel.getAttribute("aria-modal") === "true"
+    ) {
       $("closeDetail").click();
       return;
     }
-    if (event.key !== "Tab" || detailPanel.getAttribute("aria-modal") !== "true") return;
+
+    if (
+      event.key !== "Tab" ||
+      detailPanel.getAttribute("aria-modal") !== "true"
+    ) {
+      return;
+    }
 
     const focusable = Array.from(detailPanel.querySelectorAll(
       'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [href], [tabindex]:not([tabindex="-1"])'
     )).filter(element => element.getClientRects().length);
+
     if (!focusable.length) return;
 
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
+
     if (event.shiftKey && document.activeElement === first) {
       event.preventDefault();
       last.focus();
@@ -1105,81 +1194,7 @@
     }
   });
 
-
-  $("authorizeReassessmentButton").addEventListener("click", async function () {
-    if (!selected) return;
-
-    const email = String(selected.client_email || "").trim().toLowerCase();
-    const clientCode =
-      "RWF-" + String(selected.client_number || 0).padStart(6, "0");
-    const clientName = selected.client_name || "this client";
-
-    if (!email) {
-      msg(notesMessage, "This client has no email address. Reassessment cannot be authorized.", "error");
-      return;
-    }
-
-    if (!window.confirm(
-      `Authorize one new assessment for ${clientName} (${clientCode}) using ${email}? The previous assessment will be preserved. Anyone who controls this email address may submit the next assessment, so confirm the client's identity first.`
-    )) return;
-
-    const button = $("authorizeReassessmentButton");
-    button.disabled = true;
-    button.textContent = "Authorizing…";
-    msg(notesMessage, "", "");
-
-    try {
-      const {
-        data: { session },
-        error: sessionError
-      } = await supabaseClient.auth.getSession();
-
-      if (sessionError) throw sessionError;
-      if (!session?.access_token) {
-        throw new Error("Your trainer session has expired. Please sign in again.");
-      }
-
-      const { data, error } = await supabaseClient.functions.invoke(
-        "authorize-reassessment",
-        {
-          body: { email },
-          headers: {
-            Authorization: `Bearer ${session.access_token}`
-          }
-        }
-      );
-
-      if (error) {
-        let detail = error.message || "The authorization request failed.";
-        try {
-          const response = error.context;
-          if (response && typeof response.json === "function") {
-            const body = await response.json();
-            if (body?.error) detail = body.error;
-          }
-        } catch {
-          // Keep the original function error message.
-        }
-        throw new Error(detail);
-      }
-
-      if (!data?.success) {
-        throw new Error(data?.error || "Reassessment authorization failed.");
-      }
-
-      msg(notesMessage, data.message || "Reassessment authorized.", "success");
-    } catch (error) {
-      console.error("Authorize reassessment failed:", error);
-      msg(
-        notesMessage,
-        error?.message || "Could not authorize reassessment.",
-        "error"
-      );
-    } finally {
-      button.disabled = false;
-      button.textContent = "Authorize Reassessment";
-    }
-  });
+  // The Authorize Reassessment button and its handler have been removed.
 
   $("deleteAssessmentButton").addEventListener("click", async function () {
     if (!selected) return;
@@ -1187,9 +1202,12 @@
     const clientCode =
       "RWF-" + String(selected.client_number || 0).padStart(6, "0");
     const clientName = selected.client_name || "this client";
+
     if (!window.confirm(
       `Permanently delete the assessment for ${clientName} (${clientCode})? This cannot be undone.`
-    )) return;
+    )) {
+      return;
+    }
 
     const button = $("deleteAssessmentButton");
     button.disabled = true;
@@ -1205,6 +1223,7 @@
         .maybeSingle();
 
       if (error) throw error;
+
       if (!deletedAssessment) {
         throw new Error(
           "Supabase did not delete a row. Check that the latest supabase-schema.sql delete policy is applied and your trainer account is approved."
@@ -1213,18 +1232,26 @@
 
       allAssessments = allAssessments.filter(a => a.id !== selected.id);
       selected = null;
+
       detailPanel.classList.add("rw-hidden");
       detailPanel.setAttribute("aria-modal", "false");
       document.body.classList.remove("rw-detail-open");
       lastClientTrigger = null;
+
       renderRows();
+
       msg(listMessage, `${clientCode} was permanently deleted.`, "success");
-      listMessage.scrollIntoView({ behavior: "smooth", block: "start" });
+      listMessage.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
     } catch (error) {
       console.error(error);
+
       const errorDetail = error && typeof error.message === "string"
         ? ` ${error.message}`
         : "";
+
       msg(
         notesMessage,
         `Could not delete this assessment.${errorDetail}`,
@@ -1304,6 +1331,7 @@
 
         if (!sessionNow) {
           if (passwordRecoveryActive) return;
+
           showDashboard(false);
           allAssessments = [];
         }
