@@ -827,49 +827,53 @@
   // FORGOT PASSWORD
   // --------------------------------------------------
 
-  $("forgotPasswordButton").addEventListener("click", async function () {
-    const email = $("email").value.trim();
+  const forgotPasswordButton = $("forgotPasswordButton");
 
-    if (!email) {
-      msg(
-        $("loginMessage"),
-        "Enter your trainer email address first.",
-        "error"
-      );
-      $("email").focus();
-      return;
-    }
+  if (forgotPasswordButton) {
+    forgotPasswordButton.addEventListener("click", async function () {
+      const email = $("email").value.trim();
 
-    const button = $("forgotPasswordButton");
+      if (!email) {
+        msg(
+          $("loginMessage"),
+          "Enter your trainer email address first.",
+          "error"
+        );
+        $("email").focus();
+        return;
+      }
 
-    setButtonBusy(button, true, "Sending…", "Forgot password?");
+      const button = forgotPasswordButton;
 
-    try {
-      const client = getClient();
+      setButtonBusy(button, true, "Sending…", "Forgot password?");
 
-      const { error } = await client.auth.resetPasswordForEmail(email, {
-        redirectTo: "https://rawwayfit.in/trainer.html"
-      });
+      try {
+        const client = getClient();
 
-      if (error) throw error;
+        const { error } = await client.auth.resetPasswordForEmail(email, {
+          redirectTo: "https://rawwayfit.in/trainer.html"
+        });
 
-      msg(
-        $("loginMessage"),
-        "If that account is registered, a password reset email will be sent. Check your inbox and spam folder.",
-        "success"
-      );
-    } catch (error) {
-      console.error("Password reset request failed:", error);
+        if (error) throw error;
 
-      msg(
-        $("loginMessage"),
-        error.message || "Unable to start password reset. Please try again.",
-        "error"
-      );
-    } finally {
-      setButtonBusy(button, false, "Sending…", "Forgot password?");
-    }
-  });
+        msg(
+          $("loginMessage"),
+          "If that account is registered, a password reset email will be sent. Check your inbox and spam folder.",
+          "success"
+        );
+      } catch (error) {
+        console.error("Password reset request failed:", error);
+
+        msg(
+          $("loginMessage"),
+          error.message || "Unable to start password reset. Please try again.",
+          "error"
+        );
+      } finally {
+        setButtonBusy(button, false, "Sending…", "Forgot password?");
+      }
+    });
+  }
 
   // --------------------------------------------------
   // SET NEW PASSWORD
